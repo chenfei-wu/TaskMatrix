@@ -5,7 +5,7 @@
 See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with Visual Foundation Models</font>](https://arxiv.org/abs/2303.04671)
 
 ## Demo 
-<img src="./assets/demo.gif" width="750">
+<img src="./assets/demo_short.gif" width="750">
 
 ##  System Architecture 
 
