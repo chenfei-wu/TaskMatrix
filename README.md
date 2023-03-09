@@ -28,7 +28,7 @@ bash download.sh
 # prepare your private openAI private key
 export OPENAI_API_KEY={Your_Private_Openai_Key}
 
-# crate a folder to save images
+# create a folder to save images
 mkdir ./image
 
 # Start Visual ChatGPT !
