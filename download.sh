@@ -11,3 +11,4 @@ wget https://huggingface.co/lllyasviel/ControlNet/resolve/main/models/control_sd
 wget https://huggingface.co/lllyasviel/ControlNet/resolve/main/models/control_sd15_openpose.pth
 wget https://huggingface.co/lllyasviel/ControlNet/resolve/main/models/control_sd15_scribble.pth
 wget https://huggingface.co/lllyasviel/ControlNet/resolve/main/models/control_sd15_seg.pth
+cd ../../
