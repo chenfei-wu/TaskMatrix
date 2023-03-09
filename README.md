@@ -40,7 +40,7 @@ Here we list the GPU memory usage of each visual foundation model, one can modif
 
 | Fundation Model        | Memory Usage (MB) |
 |------------------------|-------------------|
- | ImageEditing           | 6667              |
+| ImageEditing           | 6667              |
 | ImageCaption           | 1755              |
 | T2I                    | 6677              |
 | canny2image            | 5540              |
