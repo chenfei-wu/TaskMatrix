@@ -36,7 +36,7 @@ python visual_chatgpt.py
 ```
 
 ## GPU memory usage
-Here we list the GPU memory usage of each visual foundation models, one can modify ``self.tools`` with fewer visual foundation models to save your GPU memory:
+Here we list the GPU memory usage of each visual foundation model, one can modify ``self.tools`` with fewer visual foundation models to save your GPU memory:
 
 |  Fundation Model   | Memory Usage (MB)  |
 |  ----  | ----  |
