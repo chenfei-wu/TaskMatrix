@@ -19,6 +19,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 # create a new environment
 conda create -n visgpt python=3.8
 
+# To activate this environment, use 
+conda activate visgpt
+
 #  prepare the basic environments
 pip install -r requirement.txt
 
@@ -38,21 +41,21 @@ python visual_chatgpt.py
 ## GPU memory usage
 Here we list the GPU memory usage of each visual foundation model, one can modify ``self.tools`` with fewer visual foundation models to save your GPU memory:
 
-| Fundation Model        | Memory Usage (MB) |
-|------------------------|-------------------|
- | ImageEditing           | 6667              |
-| ImageCaption           | 1755              |
-| T2I                    | 6677              |
-| canny2image            | 5540              |
-| line2image             | 6679              |
-| hed2image              | 6679              |
-| scribble2image         | 6679              |
-| pose2image             | 6681              |
-| BLIPVQA                | 2709              |
-| seg2image              | 5540              |
-| depth2image            | 6677              |
-| normal2image           | 3974              |
-| Pix2Pix                | 2795              |
+|  Fundation Model   | Memory Usage (MB)  |
+|  ----  | ----  |
+| ImageInfo | 2501 |
+| T2I | 6677 |
+| canny2image | 5540 |
+| line2image | 6679 |
+| hed2image | 6679 |
+| scribble2image | 6679 |
+| pose2image | 6681 |
+| BLIPVQA | 2709 |
+| seg2image | 5540 |
+| depth2image | 6677 |
+| normal2image | 3974 |
+| StableDiffusionInpaint | 8415 |
+| Pix2Pix | 2795 |
 
 
 
