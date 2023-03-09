@@ -841,61 +841,61 @@ class ConversationBot:
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the object need to be removed. "),
             Tool(name="Replace Something From The Photo", func=self.edit.replace_part_of_image,
                  description="useful for when you want to replace an object from the object description or location with another object from its description. "
-                             "The input to this tool should be a comma seperated string of three, representing the image_path, the object to be replaced, the object to be replaced with. "),
+                             "The input to this tool should be a comma seperated string of three, representing the image_path, the object to be replaced, the object to be replaced with "),
 
             Tool(name="Instruct Image Using Text", func=self.pix2pix.inference,
                  description="useful for when you want to the style of the image to be like the text. like: make it look like a painting. or make it like a robot. "
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the text. "),
             Tool(name="Answer Question About The Image", func=self.BLIPVQA.get_answer_from_question_and_image,
                  description="useful for when you need an answer for a question based on an image. like: what is the background color of the last image, how many cats in this figure, what is in this figure. "
-                             "The input to this tool should be a comma seperated string of two, representing the image_path and the question. "),
+                             "The input to this tool should be a comma seperated string of two, representing the image_path and the question"),
             Tool(name="Edge Detection On Image", func=self.image2canny.inference,
-                 description="useful for when you want to detect the edge of the image. like: detect the edges of this image, or canny detection on image, or peform edge detection on this image, or detect the canny image of this image."
+                 description="useful for when you want to detect the edge of the image. like: detect the edges of this image, or canny detection on image, or peform edge detection on this image, or detect the canny image of this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Canny Image", func=self.canny2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and a canny image. like: generate a real image of a object or something from this canny image, or generate a new real image of a object or something from this edge image."
-                             "The input to this tool should be a comma seperated string of two, representing the image_path and the user description"),
+                 description="useful for when you want to generate a new real image from both the user desciption and a canny image. like: generate a real image of a object or something from this canny image, or generate a new real image of a object or something from this edge image. "
+                             "The input to this tool should be a comma seperated string of two, representing the image_path and the user description. "),
             Tool(name="Line Detection On Image", func=self.image2line.inference,
-                 description="useful for when you want to detect the straight line of the image. like: detect the straight lines of this image, or straight line detection on image, or peform straight line detection on this image, or detect the straight line image of this image."
+                 description="useful for when you want to detect the straight line of the image. like: detect the straight lines of this image, or straight line detection on image, or peform straight line detection on this image, or detect the straight line image of this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Line Image", func=self.line2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and a straight line image. like: generate a real image of a object or something from this straight line image, or generate a new real image of a object or something from this straight lines."
-                             "The input to this tool should be a comma seperated string of two, representing the image_path and the user description"),
+                 description="useful for when you want to generate a new real image from both the user desciption and a straight line image. like: generate a real image of a object or something from this straight line image, or generate a new real image of a object or something from this straight lines. "
+                             "The input to this tool should be a comma seperated string of two, representing the image_path and the user description. "),
             Tool(name="Hed Detection On Image", func=self.image2hed.inference,
-                 description="useful for when you want to detect the soft hed boundary of the image. like: detect the soft hed boundary of this image, or hed boundary detection on image, or peform hed boundary detection on this image, or detect soft hed boundary image of this image."
+                 description="useful for when you want to detect the soft hed boundary of the image. like: detect the soft hed boundary of this image, or hed boundary detection on image, or peform hed boundary detection on this image, or detect soft hed boundary image of this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Soft Hed Boundary Image", func=self.hed2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and a soft hed boundary image. like: generate a real image of a object or something from this soft hed boundary image, or generate a new real image of a object or something from this hed boundary."
+                 description="useful for when you want to generate a new real image from both the user desciption and a soft hed boundary image. like: generate a real image of a object or something from this soft hed boundary image, or generate a new real image of a object or something from this hed boundary. "
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the user description"),
             Tool(name="Segmentation On Image", func=self.image2seg.inference,
-                 description="useful for when you want to detect segmentations of the image. like: segment this image, or generate segmentations on this image, or peform segmentation on this image."
+                 description="useful for when you want to detect segmentations of the image. like: segment this image, or generate segmentations on this image, or peform segmentation on this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Segmentations", func=self.seg2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and segmentations. like: generate a real image of a object or something from this segmentation image, or generate a new real image of a object or something from these segmentations."
+                 description="useful for when you want to generate a new real image from both the user desciption and segmentations. like: generate a real image of a object or something from this segmentation image, or generate a new real image of a object or something from these segmentations. "
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the user description"),
             Tool(name="Predict Depth On Image", func=self.image2depth.inference,
-                 description="useful for when you want to detect depth of the image. like: generate the depth from this image, or detect the depth map on this image, or predict the depth for this image."
+                 description="useful for when you want to detect depth of the image. like: generate the depth from this image, or detect the depth map on this image, or predict the depth for this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Depth",  func=self.depth2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and depth image. like: generate a real image of a object or something from this depth image, or generate a new real image of a object or something from the depth map."
+                 description="useful for when you want to generate a new real image from both the user desciption and depth image. like: generate a real image of a object or something from this depth image, or generate a new real image of a object or something from the depth map. "
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the user description"),
             Tool(name="Predict Normal Map On Image", func=self.image2normal.inference,
-                 description="useful for when you want to detect norm map of the image. like: generate normal map from this image, or predict normal map of this image"
+                 description="useful for when you want to detect norm map of the image. like: generate normal map from this image, or predict normal map of this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Normal Map", func=self.normal2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and normal map. like: generate a real image of a object or something from this normal map, or generate a new real image of a object or something from the normal map."
+                 description="useful for when you want to generate a new real image from both the user desciption and normal map. like: generate a real image of a object or something from this normal map, or generate a new real image of a object or something from the normal map. "
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the user description"),
             Tool(name="Sketch Detection On Image", func=self.image2scribble.inference,
-                 description="useful for when you want to generate a scribble of the image. like: generate a scribble of this image, or generate a sketch from this image, detect the sketch from this image."
+                 description="useful for when you want to generate a scribble of the image. like: generate a scribble of this image, or generate a sketch from this image, detect the sketch from this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Sketch Image", func=self.scribble2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and a scribble image or a sketch image."
+                 description="useful for when you want to generate a new real image from both the user desciption and a scribble image or a sketch image. "
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the user description"),
             Tool(name="Pose Detection On Image", func=self.image2pose.inference,
-                 description="useful for when you want to detect the human pose of the image. like: generate human poses of this image, or generate a pose image from this image."
+                 description="useful for when you want to detect the human pose of the image. like: generate human poses of this image, or generate a pose image from this image. "
                              "The input to this tool should be a string, representing the image_path"),
             Tool(name="Generate Image Condition On Pose Image", func=self.pose2image.inference,
-                 description="useful for when you want to generate a new real image from both the user desciption and a human pose image. like: generate a real image of a human from this human pose image, or generate a new real image of a human from this pose."
+                 description="useful for when you want to generate a new real image from both the user desciption and a human pose image. like: generate a real image of a human from this human pose image, or generate a new real image of a human from this pose. "
                              "The input to this tool should be a comma seperated string of two, representing the image_path and the user description")]
         self.agent = initialize_agent(
             self.tools,
