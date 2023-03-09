@@ -19,6 +19,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 # create a new environment
 conda create -n visgpt python=3.8
 
+# activate the new environment
+conda activate visgpt
+
 #  prepare the basic environments
 pip install -r requirement.txt
 
