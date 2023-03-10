@@ -34,6 +34,9 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 # create a folder to save images
 mkdir ./image
 
+# If your computer only supports a single GPU.If you have multiple GPUs, disregard.
+sed -i 's/cuda:[0-9]/cuda:0/g' visual_chatgpt.py
+
 # Start Visual ChatGPT !
 python visual_chatgpt.py
 ```
