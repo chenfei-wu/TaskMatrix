@@ -52,15 +52,19 @@ Here we list the GPU memory usage of each visual foundation model, one can modif
 | seg2image              | 5540              |
 | depth2image            | 6677              |
 | normal2image           | 3974              |
-| Pix2Pix                | 2795              |
+| InstructPix2Pix        | 2795              |
 
 
 
 ## Acknowledgement
 We appreciate the open source of the following projects:
 
-- HuggingFace [[Project]](https://github.com/huggingface/transformers)
+[Hugging Face](https://github.com/huggingface) &#8194;
+[LangChain](https://github.com/hwchase17/langchain) &#8194;
+[Stable Diffusion](https://github.com/CompVis/stable-diffusion) &#8194; 
+[ControlNet](https://github.com/lllyasviel/ControlNet) &#8194; 
+[InstructPix2Pix](https://github.com/timothybrooks/instruct-pix2pix) &#8194; 
+[CLIPSeg](https://github.com/timojl/clipseg) &#8194;
+[BLIP](https://github.com/salesforce/BLIP) &#8194;
 
-- ControlNet  [[Paper]](https://arxiv.org/abs/2302.05543) [[Project]](https://github.com/lllyasviel/ControlNet)
 
-- Stable Diffusion [[Paper]](https://arxiv.org/abs/2112.10752)  [[Project]](https://github.com/CompVis/stable-diffusion)
