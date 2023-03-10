@@ -86,7 +86,7 @@ def prompts(name, description):
 
     return decorator
 
-
+# This function cuts the dialogue history to keep only the last n words, where n is specified by the user. It removes the earliest paragraphs until the number of tokens in the remaining paragraphs is less than n.
 def cut_dialogue_history(history_memory, keep_last_n_words=500):
     tokens = history_memory.split()
     n_tokens = len(tokens)
@@ -101,7 +101,7 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
             paragraphs = paragraphs[1:]
         return '\n' + '\n'.join(paragraphs)
 
-
+# This function takes an image name and an optional function name and returns a new unique image name based on the original name and the function name.
 def get_new_image_name(org_img_name, func_name="update"):
     head_tail = os.path.split(org_img_name)
     head = head_tail[0]
@@ -119,7 +119,7 @@ def get_new_image_name(org_img_name, func_name="update"):
         new_file_name = '{}_{}_{}_{}.png'.format(this_new_uuid, func_name, recent_prev_file_name, most_org_file_name)
     return os.path.join(head, new_file_name)
 
-
+#This class contains a method named "inference" that runs a pre-trained image segmentation model on an image and returns the resulting binary mask.
 class MaskFormer:
     def __init__(self, device):
         print("Initializing MaskFormer to %s" % device)
@@ -881,7 +881,7 @@ class ConversationBot:
               f"Current Memory: {self.agent.memory.buffer}")
         return state, state, txt + ' ' + image_filename + ' '
 
-
+#This code creates a GUI for the conversational bot using the gradio library and launches it on a specified server and port number.
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--load', type=str, default="ImageCaptioning_cuda:0,Text2Image_cuda:0")
