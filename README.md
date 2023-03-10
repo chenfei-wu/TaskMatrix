@@ -62,7 +62,7 @@ Here we list the GPU memory usage of each visual foundation model, one can modif
 ## Acknowledgement
 We appreciate the open source of the following projects:
 
-- HuggingFace [[Project]](https://github.com/huggingface/transformers)
+- Hugging Face [[Project]](https://github.com/huggingface/transformers)
 
 - ControlNet  [[Paper]](https://arxiv.org/abs/2302.05543) [[Project]](https://github.com/lllyasviel/ControlNet)
 
