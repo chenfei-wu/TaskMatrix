@@ -15,7 +15,7 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 
 ## Quick Start
 
-```
+```sh
 # create a new environment
 conda create -n visgpt python=3.8
 
