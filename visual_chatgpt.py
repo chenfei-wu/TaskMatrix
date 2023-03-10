@@ -152,7 +152,7 @@ class ImageEditing:
         self.inpainting = StableDiffusionInpaintPipeline.from_pretrained("runwayml/stable-diffusion-inpainting",).to(device)
 
     def remove_part_of_image(self, input):
-        image_path, to_be_removed_txt = input.split(",")
+        image_path, to_be_removed_txt = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         print(f'remove_part_of_image: to_be_removed {to_be_removed_txt}')
         return self.replace_part_of_image(f"{image_path},{to_be_removed_txt},background")
 
@@ -789,7 +789,7 @@ class BLIPVQA:
         self.model = BlipForQuestionAnswering.from_pretrained("Salesforce/blip-vqa-base").to(self.device)
 
     def get_answer_from_question_and_image(self, inputs):
-        image_path, question = inputs.split(",")
+        image_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         raw_image = Image.open(image_path).convert('RGB')
         print(F'BLIPVQA :question :{question}')
         inputs = self.processor(raw_image, question, return_tensors="pt").to(self.device)
