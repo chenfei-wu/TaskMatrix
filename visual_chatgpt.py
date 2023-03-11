@@ -1,13 +1,12 @@
 import sys
-import os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent))
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 import gradio as gr
 from transformers import AutoModelForCausalLM, AutoTokenizer, CLIPSegProcessor, CLIPSegForImageSegmentation
 import torch
 from diffusers import StableDiffusionPipeline
 from diffusers import StableDiffusionInstructPix2PixPipeline, EulerAncestralDiscreteScheduler
-import os
 from langchain.agents.initialize import initialize_agent
 from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
@@ -93,9 +92,9 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
         return '\n' + '\n'.join(paragraphs)
 
 def get_new_image_name(org_img_name, func_name="update"):
-    head_tail = os.path.split(org_img_name)
-    head = head_tail[0]
-    tail = head_tail[1]
+    head_tail = Path(org_img_name)
+    head = head_tail.parent
+    tail = head_tail.name
     name_split = tail.split('.')[0].split('_')
     this_new_uuid = str(uuid.uuid4())[0:4]
     if len(name_split) == 1:
@@ -107,7 +106,7 @@ def get_new_image_name(org_img_name, func_name="update"):
         most_org_file_name = name_split[3]
         recent_prev_file_name = name_split[0]
         new_file_name = '{}_{}_{}_{}.png'.format(this_new_uuid, func_name, recent_prev_file_name, most_org_file_name)
-    return os.path.join(head, new_file_name)
+    return Path(head) / new_file_name
 
 def create_model(config_path, device):
     config = OmegaConf.load(config_path)
@@ -194,7 +193,7 @@ class T2I:
         self.pipe.to(device)
 
     def inference(self, text):
-        image_filename = os.path.join('image', str(uuid.uuid4())[0:8] + ".png")
+        image_filename = Path('image') / (str(uuid.uuid4())[0:8] + ".png")
         refined_text = self.text_refine_gpt2_pipe(text)[0]["generated_text"]
         print(f'{text} refined to {refined_text}')
         image = self.pipe(refined_text).images[0]
@@ -916,7 +915,7 @@ class ConversationBot:
         print("===============Running run_image =============")
         print("Inputs:", image, state)
         print("======>Previous memory:\n %s" % self.agent.memory)
-        image_filename = os.path.join('image', str(uuid.uuid4())[0:8] + ".png")
+        image_filename = Path('image') / (str(uuid.uuid4())[0:8] + ".png")
         print("======>Auto Resize Image...")
         img = Image.open(image.name)
         width, height = img.size
