@@ -4,39 +4,15 @@
 
 See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with Visual Foundation Models</font>](https://arxiv.org/abs/2303.04671)
 
+## Intro
+I implement a google-colab version under standard GPU environment.
+I just use two models `T2I` and `ImageCaption` to process images because of my insufficient GPU memory.
 ## Demo 
-<img src="./assets/demo_short.gif" width="750">
+ `T2I`
+<img src="./assets/dog-meme.jpg" width="750">
+`ImageCaption`
+<img src="./assets/football.jpg" width="750">
 
-##  System Architecture 
-
- 
-<p align="center"><img src="./assets/figure.jpg" alt="Logo"></p>
-
-
-## Quick Start
-
-```
-# create a new environment
-conda create -n visgpt python=3.8
-
-# activate the new environment
-conda activate visgpt
-
-#  prepare the basic environments
-pip install -r requirement.txt
-
-# download the visual foundation models
-bash download.sh
-
-# prepare your private openAI private key
-export OPENAI_API_KEY={Your_Private_Openai_Key}
-
-# create a folder to save images
-mkdir ./image
-
-# Start Visual ChatGPT !
-python visual_chatgpt.py
-```
 
 ## GPU memory usage
 Here we list the GPU memory usage of each visual foundation model, one can modify ``self.tools`` with fewer visual foundation models to save your GPU memory:
