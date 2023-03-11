@@ -81,7 +81,7 @@ Thought: Do I need to use a tool? {agent_scratchpad}"""
 def cut_dialogue_history(history_memory, keep_last_n_words=500):
     tokens = history_memory.split()
     n_tokens = len(tokens)
-    print(f"hitory_memory:{history_memory}, n_tokens: {n_tokens}")
+    print(f"history_memory:{history_memory}, n_tokens: {n_tokens}")
     if n_tokens < keep_last_n_words:
         return history_memory
     else:
