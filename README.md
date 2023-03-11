@@ -9,7 +9,7 @@ I implement a google-colab version under standard GPU environment.
 I just use two models `T2I` and `ImageCaption` to process images because of my insufficient GPU memory.
 You can try my colab notebook here 
 
-[![Open 2k image generation in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1qjAZqWb-EYGDo01TcEoCIJcTMi_ELjxS?usp=sharing)
+[![Open 2k image generation in Colab](https://colab.research.google.com/drive/1bl-JAgrUru9GlGsb9hrcZCqj3uI6ev_O?usp=sharing)
 ## Demo 
 `T2I`
 
