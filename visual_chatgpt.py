@@ -1,13 +1,10 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import gradio as gr
 from transformers import AutoModelForCausalLM, AutoTokenizer, CLIPSegProcessor, CLIPSegForImageSegmentation
 import torch
 from diffusers import StableDiffusionPipeline
 from diffusers import StableDiffusionInstructPix2PixPipeline, EulerAncestralDiscreteScheduler
-import os
 from langchain.agents.initialize import initialize_agent
 from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
@@ -33,6 +30,9 @@ from ControlNet.annotator.hed import HEDdetector, nms
 from ControlNet.annotator.openpose import OpenposeDetector
 from ControlNet.annotator.uniformer import UniformerDetector
 from ControlNet.annotator.midas import MidasDetector
+
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
@@ -79,6 +79,8 @@ The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGP
 Thought: Do I need to use a tool? {agent_scratchpad}"""
 
 def cut_dialogue_history(history_memory, keep_last_n_words=500):
+    if history_memory is None or len(history_memory) == 0:
+        return history_memory
     tokens = history_memory.split()
     n_tokens = len(tokens)
     print(f"hitory_memory:{history_memory}, n_tokens: {n_tokens}")
