@@ -14,7 +14,9 @@ You can try my colab notebook here
 `T2I`
 
 <img src="./assets/dog-meme.jpg" width="750">
+
 `ImageCaption`
+
 <img src="./assets/football.jpg" width="750">
 
 
