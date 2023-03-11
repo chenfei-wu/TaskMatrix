@@ -7,6 +7,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 ## Intro
 I implement a google-colab version under standard GPU environment.
 I just use two models `T2I` and `ImageCaption` to process images because of my insufficient GPU memory.
+You can try my colab notebook here 
+
+[![Open 2k image generation in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1qjAZqWb-EYGDo01TcEoCIJcTMi_ELjxS?usp=sharing)
 ## Demo 
 `T2I`
 <img src="./assets/dog-meme.jpg" width="750">
