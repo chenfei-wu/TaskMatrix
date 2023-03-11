@@ -29,8 +29,13 @@ pip install -r requirement.txt
 bash download.sh
 
 # prepare your private openAI private key
+## for Linux
 export OPENAI_API_KEY={Your_Private_Openai_Key}
-
+## for Windows
+set OPENAI_API_KEY={Your_Private_Openai_Key}
+```
+**Note**:if u have any problem when preparing your private openAI private key, you can refer to this [issue](https://github.com/microsoft/visual-chatgpt/issues/57)
+```
 # create a folder to save images
 mkdir ./image
 
