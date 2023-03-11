@@ -40,7 +40,7 @@ Visual ChatGPT is able to process and understand large amounts of text and image
 
 Human may provide new figures to Visual ChatGPT with a description. The description helps Visual ChatGPT to understand this image, but Visual ChatGPT should use tools to finish following tasks, rather than directly imagine from the description.
 
-Overall, Visual ChatGPT is a powerful visual dialogue assistant tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. 
+Overall, Visual ChatGPT is a powerful visual dialogue assistant tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics.
 
 
 TOOLS:
@@ -75,13 +75,13 @@ Previous conversation history:
 
 New input: {input}
 Since Visual ChatGPT is a text language model, Visual ChatGPT must use tools to observe images rather than imagination.
-The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGPT should remember to repeat important information in the final response for Human. 
+The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGPT should remember to repeat important information in the final response for Human.
 Thought: Do I need to use a tool? {agent_scratchpad}"""
 
 def cut_dialogue_history(history_memory, keep_last_n_words=500):
     tokens = history_memory.split()
     n_tokens = len(tokens)
-    print(f"hitory_memory:{history_memory}, n_tokens: {n_tokens}")
+    print(f"history_memory:{history_memory}, n_tokens: {n_tokens}")
     if n_tokens < keep_last_n_words:
         return history_memory
     else:
