@@ -29,7 +29,7 @@ pip install -r requirement.txt
 bash download.sh
 
 # prepare your private openAI private key
-## for Linux
+## for Linux & mac
 export OPENAI_API_KEY={Your_Private_Openai_Key}
 ## for Windows
 set OPENAI_API_KEY={Your_Private_Openai_Key}
