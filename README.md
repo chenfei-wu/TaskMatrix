@@ -16,6 +16,12 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 ## Quick Start
 
 ```
+# clone this repository
+git clone https://github.com/microsoft/visual-chatgpt.git
+
+# change into the new directory
+cd visual-chatgpt
+
 # create a new environment
 conda create -n visgpt python=3.8
 
