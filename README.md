@@ -28,8 +28,8 @@ pip install -r requirement.txt
 # download the visual foundation models
 bash download.sh
 
-# prepare your private openAI private key
-export OPENAI_API_KEY={Your_Private_Openai_Key}
+# prepare your private OpenAI private API key
+export OPENAI_API_KEY={Your_Private_Openai_Api_Key}
 
 # create a folder to save images
 mkdir ./image
