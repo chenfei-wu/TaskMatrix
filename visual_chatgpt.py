@@ -12,6 +12,7 @@ from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 import re
+from typing import Any
 import uuid
 from diffusers import StableDiffusionInpaintPipeline
 from PIL import Image
@@ -77,7 +78,8 @@ Since Visual ChatGPT is a text language model, Visual ChatGPT must use tools to 
 The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGPT should remember to repeat important information in the final response for Human. 
 Thought: Do I need to use a tool? {agent_scratchpad}"""
 
-def cut_dialogue_history(history_memory, keep_last_n_words=500):
+# Add type hints for this function
+def cut_dialogue_history(history_memory: str, keep_last_n_words: int = 500) -> str:
     tokens = history_memory.split()
     n_tokens = len(tokens)
     print(f"hitory_memory:{history_memory}, n_tokens: {n_tokens}")
@@ -91,7 +93,8 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
             paragraphs = paragraphs[1:]
         return '\n' + '\n'.join(paragraphs)
 
-def get_new_image_name(org_img_name, func_name="update"):
+
+def get_new_image_name(org_img_name: str, func_name: str = "update") -> Path:
     head_tail = Path(org_img_name)
     head = head_tail.parent
     tail = head_tail.name
@@ -106,7 +109,7 @@ def get_new_image_name(org_img_name, func_name="update"):
     new_file_name = f'{this_new_uuid}_{func_name}_{recent_prev_file_name}_{most_org_file_name}.png'
     return Path(head) / new_file_name
 
-def create_model(config_path, device):
+def create_model(config_path: str, device: Any) -> Any:
     config = OmegaConf.load(config_path)
     OmegaConf.update(config, "model.params.cond_stage_config.params.device", device)
     model = instantiate_from_config(config.model).cpu()
@@ -114,15 +117,15 @@ def create_model(config_path, device):
     return model
 
 class MaskFormer:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         self.device = device
         self.processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
         self.model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 
-    def inference(self, image_path, text):
-        threshold = 0.5
-        min_area = 0.02
-        padding = 20
+    def inference(self, image_path: str, text: str) -> Image.Image:
+        threshold: float = 0.5
+        min_area: float = 0.02
+        padding: int = 20
         original_image = Image.open(image_path)
         image = original_image.resize((512, 512))
         inputs = self.processor(text=text, images=image, padding="max_length", return_tensors="pt",).to(self.device)
@@ -142,18 +145,18 @@ class MaskFormer:
         return image_mask.resize(image.size)
 
 class ImageEditing:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing StableDiffusionInpaint to {device}")
         self.device = device
         self.mask_former = MaskFormer(device=self.device)
         self.inpainting = StableDiffusionInpaintPipeline.from_pretrained("runwayml/stable-diffusion-inpainting",).to(device)
 
-    def remove_part_of_image(self, input):
+    def remove_part_of_image(self, input: str) -> Path:
         image_path, to_be_removed_txt = input.split(",")
         print(f'remove_part_of_image: to_be_removed {to_be_removed_txt}')
         return self.replace_part_of_image(f"{image_path},{to_be_removed_txt},background")
 
-    def replace_part_of_image(self, input):
+    def replace_part_of_image(self, input: str) -> Path:
         image_path, to_be_replaced_txt, replace_with_txt = input.split(",")
         print(f'replace_part_of_image: replace_with_txt {replace_with_txt}')
         original_image = Image.open(image_path)
@@ -164,14 +167,14 @@ class ImageEditing:
         return updated_image_path
 
 class Pix2Pix:
-    def __init__(self, device):
-        print(f"Initializing Pix2Pix to {device}")
+    def __init__(self, device: str) -> None:
+        print(f"Initialize Pix2Pix to {device}")
         self.device = device
         self.pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained("timbrooks/instruct-pix2pix", torch_dtype=torch.float16, safety_checker=None).to(device)
         self.pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(self.pipe.scheduler.config)
 
-    def inference(self, inputs):
-        """Change style of image."""
+    def inference(self, inputs: str) -> Path:
+        """Change the style of an image"""
         print("===>Starting Pix2Pix Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         original_image = Image.open(image_path)
@@ -180,9 +183,10 @@ class Pix2Pix:
         image.save(updated_image_path)
         return updated_image_path
 
+
 class T2I:
-    def __init__(self, device):
-        print(f"Initializing T2I to {device}")
+    def __init__(self, device: str) -> None:
+        print(f"Initialize T2I to {device}")
         self.device = device
         self.pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
         self.text_refine_tokenizer = AutoTokenizer.from_pretrained("Gustavosta/MagicPrompt-Stable-Diffusion")
@@ -190,36 +194,36 @@ class T2I:
         self.text_refine_gpt2_pipe = pipeline("text-generation", model=self.text_refine_model, tokenizer=self.text_refine_tokenizer, device=self.device)
         self.pipe.to(device)
 
-    def inference(self, text):
-        image_filename = Path('image') / f"{str(uuid.uuid4())[:8]}.png"
+    def inference(self, text: str) -> Path:
+        image_filename = Path("image") / f"{str(uuid.uuid4())[:8]}.png"
         refined_text = self.text_refine_gpt2_pipe(text)[0]["generated_text"]
-        print(f'{text} refined to {refined_text}')
+        print(f"{text} refined to {refined_text}")
         image = self.pipe(refined_text).images[0]
         image.save(image_filename)
         print(f"Processed T2I.run, text: {text}, image_filename: {image_filename}")
         return image_filename
 
 class ImageCaptioning:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing ImageCaptioning to {device}")
         self.device = device
         self.processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
         self.model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(self.device)
 
-    def inference(self, image_path):
+    def inference(self, image_path: str) -> str:
         inputs = self.processor(Image.open(image_path), return_tensors="pt").to(self.device)
         out = self.model.generate(**inputs)
         captions = self.processor.decode(out[0], skip_special_tokens=True)
         return captions
 
 class Image2Canny:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct detect canny.")
         self.detector = CannyDetector()
         self.low_thresh = 100
         self.high_thresh = 200
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2canny Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -231,12 +235,12 @@ class Image2Canny:
         return updated_image_path
 
 class Canny2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize the canny2image model.")
+        self.device = device
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_canny.pth', location='cpu'))
         self.model = model.to(device)
-        self.device = device
         self.ddim_sampler = DDIMSampler(self.model)
         self.ddim_steps = 20
         self.image_resolution = 512
@@ -249,7 +253,7 @@ class Canny2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting canny2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -287,14 +291,14 @@ class Canny2Image:
         return updated_image_path
 
 class Image2Line:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct detect straight line...")
         self.detector = MLSDdetector()
         self.value_thresh = 0.1
         self.dis_thresh = 0.1
         self.resolution = 512
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2hough Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -308,7 +312,7 @@ class Image2Line:
 
 
 class Line2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize the line2image model...")
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_mlsd.pth', location='cpu'))
@@ -326,7 +330,7 @@ class Line2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting line2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -367,12 +371,12 @@ class Line2Image:
 
 
 class Image2Hed:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct detect soft HED boundary...")
         self.detector = HEDdetector()
         self.resolution = 512
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2hed Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -385,7 +389,7 @@ class Image2Hed:
 
 
 class Hed2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize the hed2image model...")
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_hed.pth', location='cpu'))
@@ -403,7 +407,7 @@ class Hed2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting hed2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -441,12 +445,12 @@ class Hed2Image:
         return updated_image_path
 
 class Image2Scribble:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct detect scribble.")
         self.detector = HEDdetector()
         self.resolution = 512
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2scribble Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -467,7 +471,7 @@ class Image2Scribble:
         return updated_image_path
 
 class Scribble2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize the scribble2image model...")
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_scribble.pth', location='cpu'))
@@ -485,7 +489,7 @@ class Scribble2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting scribble2image Inference")
         print(f'sketch device {self.device}')
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -525,12 +529,12 @@ class Scribble2Image:
         return updated_image_path
 
 class Image2Pose:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct human pose.")
         self.detector = OpenposeDetector()
         self.resolution = 512
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2pose Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -546,7 +550,7 @@ class Image2Pose:
         return updated_image_path
 
 class Pose2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize the pose2image model...")
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_openpose.pth', location='cpu'))
@@ -564,7 +568,7 @@ class Pose2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting pose2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -602,12 +606,12 @@ class Pose2Image:
         return updated_image_path
 
 class Image2Seg:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct segmentations.")
         self.detector = UniformerDetector()
         self.resolution = 512
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2seg Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -623,7 +627,7 @@ class Image2Seg:
         return updated_image_path
 
 class Seg2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize the seg2image model...")
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_seg.pth', location='cpu'))
@@ -641,7 +645,7 @@ class Seg2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting seg2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -679,12 +683,12 @@ class Seg2Image:
         return updated_image_path
 
 class Image2Depth:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct depth estimation.")
         self.detector = MidasDetector()
         self.resolution = 512
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2depth Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -700,7 +704,7 @@ class Image2Depth:
         return updated_image_path
 
 class Depth2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize depth2image model...")
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_depth.pth', location='cpu'))
@@ -718,7 +722,7 @@ class Depth2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting depth2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -749,13 +753,13 @@ class Depth2Image:
         return updated_image_path
 
 class Image2Normal:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Direct normal estimation.")
         self.detector = MidasDetector()
         self.resolution = 512
         self.bg_threshold = 0.4
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting image2 normal Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -771,7 +775,7 @@ class Image2Normal:
         return updated_image_path
 
 class Normal2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print("Initialize normal2image model...")
         model = create_model('ControlNet/models/cldm_v15.yaml', device=device).to(device)
         model.load_state_dict(load_state_dict('ControlNet/models/control_sd15_normal.pth', location='cpu'))
@@ -789,7 +793,7 @@ class Normal2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> Path:
         print("===>Starting normal2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -828,13 +832,13 @@ class Normal2Image:
         return updated_image_path
 
 class BlipVqa:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing BLIP VQA to {device}")
         self.device = device
         self.processor = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
         self.model = BlipForQuestionAnswering.from_pretrained("Salesforce/blip-vqa-base").to(self.device)
 
-    def get_answer_from_question_and_image(self, inputs):
+    def get_answer_from_question_and_image(self, inputs: str) -> str:
         image_path, question = inputs.split(",")
         raw_image = Image.open(image_path).convert('RGB')
         print(F'BLIPVQA :question :{question}')
@@ -844,7 +848,7 @@ class BlipVqa:
         return answer
 
 class ConversationBot:
-    def __init__(self):
+    def __init__(self) -> None:
         print("Initializing VisualChatGPT")
         self.llm = OpenAI(temperature=0)
         self.edit = ImageEditing(device="cuda:6")
@@ -946,7 +950,7 @@ class ConversationBot:
             return_intermediate_steps=True,
             agent_kwargs={'prefix': VISUAL_CHATGPT_PREFIX, 'format_instructions': VISUAL_CHATGPT_FORMAT_INSTRUCTIONS, 'suffix': VISUAL_CHATGPT_SUFFIX}, )
 
-    def run_text(self, text, state):
+def run_text(self, text: str, state: list) -> tuple:
         print("===============Running run_text =============")
         print("Inputs:", text, state)
         print(f"======>Previous memory:\n {self.agent.memory}")
@@ -958,7 +962,7 @@ class ConversationBot:
         print("Outputs:", state)
         return state, state
 
-    def run_image(self, image, state, txt):
+def run_image(self, image: str, state: list, txt: str) -> tuple:
         print("===============Running run_image =============")
         print("Inputs:", image, state)
         print(f"======>Previous memory:\n {self.agent.memory}")
@@ -973,8 +977,8 @@ class ConversationBot:
         img.save(image_filename, "PNG")
         print(f"Resize image form {width}x{height} to {width_new}x{height_new}")
         description = self.i2t.inference(image_filename)
-        Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
-        AI_prompt = "Received.  "
+        Human_prompt: str = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
+        AI_prompt: str = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
         print(f"======>Current memory:\n {self.agent.memory}")
         state = state + [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
