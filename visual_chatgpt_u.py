@@ -151,12 +151,12 @@ class ImageEditing:
         self.mask_former = MaskFormer(device=self.device)
         self.inpainting = StableDiffusionInpaintPipeline.from_pretrained("runwayml/stable-diffusion-inpainting",).to(device)
 
-    def remove_part_of_image(self, input: str) -> Path:
+    def remove_part_of_image(self, input: str) -> str:
         image_path, to_be_removed_txt = input.split(",")
         print(f'remove_part_of_image: to_be_removed {to_be_removed_txt}')
         return self.replace_part_of_image(f"{image_path},{to_be_removed_txt},background")
 
-    def replace_part_of_image(self, input: str) -> Path:
+    def replace_part_of_image(self, input: str) -> str:
         image_path, to_be_replaced_txt, replace_with_txt = input.split(",")
         print(f'replace_part_of_image: replace_with_txt {replace_with_txt}')
         original_image = Image.open(image_path)
@@ -164,7 +164,7 @@ class ImageEditing:
         updated_image = self.inpainting(prompt=replace_with_txt, image=original_image, mask_image=mask_image).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="replace-something")
         updated_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Pix2Pix:
     def __init__(self, device: str) -> None:
@@ -173,7 +173,7 @@ class Pix2Pix:
         self.pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained("timbrooks/instruct-pix2pix", torch_dtype=torch.float16, safety_checker=None).to(device)
         self.pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(self.pipe.scheduler.config)
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         """Change the style of an image"""
         print("===>Starting Pix2Pix Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -181,7 +181,7 @@ class Pix2Pix:
         image = self.pipe(instruct_text,image=original_image,num_inference_steps=40,image_guidance_scale=1.2,).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="pix2pix")
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 
 class T2I:
@@ -194,14 +194,14 @@ class T2I:
         self.text_refine_gpt2_pipe = pipeline("text-generation", model=self.text_refine_model, tokenizer=self.text_refine_tokenizer, device=self.device)
         self.pipe.to(device)
 
-    def inference(self, text: str) -> Path:
+    def inference(self, text: str) -> str:
         image_filename = Path("image") / f"{str(uuid.uuid4())[:8]}.png"
         refined_text = self.text_refine_gpt2_pipe(text)[0]["generated_text"]
         print(f"{text} refined to {refined_text}")
         image = self.pipe(refined_text).images[0]
         image.save(image_filename)
         print(f"Processed T2I.run, text: {text}, image_filename: {image_filename}")
-        return image_filename
+        return str(image_filename)
 
 class ImageCaptioning:
     def __init__(self, device: str) -> None:
@@ -223,7 +223,7 @@ class Image2Canny:
         self.low_thresh = 100
         self.high_thresh = 200
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2canny Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -232,7 +232,7 @@ class Image2Canny:
         image = Image.fromarray(canny)
         updated_image_path = get_new_image_name(inputs, func_name="edge")
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Canny2Image:
     def __init__(self, device: str) -> None:
@@ -253,7 +253,7 @@ class Canny2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting canny2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -288,7 +288,7 @@ class Canny2Image:
         updated_image_path = get_new_image_name(image_path, func_name="canny2image")
         real_image = Image.fromarray(x_samples[0])  # get default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Image2Line:
     def __init__(self) -> None:
@@ -298,7 +298,7 @@ class Image2Line:
         self.dis_thresh = 0.1
         self.resolution = 512
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2hough Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -308,7 +308,7 @@ class Image2Line:
         hough = 255 - cv2.dilate(hough, np.ones(shape=(3, 3), dtype=np.uint8), iterations=1)
         image = Image.fromarray(hough)
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 
 class Line2Image:
@@ -330,7 +330,7 @@ class Line2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting line2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -367,7 +367,7 @@ class Line2Image:
         updated_image_path = get_new_image_name(image_path, func_name="line2image")
         real_image = Image.fromarray(x_samples[0])  # default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 
 class Image2Hed:
@@ -376,7 +376,7 @@ class Image2Hed:
         self.detector = HEDdetector()
         self.resolution = 512
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2hed Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -385,7 +385,7 @@ class Image2Hed:
         updated_image_path = get_new_image_name(inputs, func_name="hed-boundary")
         image = Image.fromarray(hed)
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 
 class Hed2Image:
@@ -407,7 +407,7 @@ class Hed2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting hed2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -442,7 +442,7 @@ class Hed2Image:
         updated_image_path = get_new_image_name(image_path, func_name="hed2image")
         real_image = Image.fromarray(x_samples[0])  # default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Image2Scribble:
     def __init__(self) -> None:
@@ -450,7 +450,7 @@ class Image2Scribble:
         self.detector = HEDdetector()
         self.resolution = 512
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2scribble Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -468,7 +468,7 @@ class Image2Scribble:
         updated_image_path = get_new_image_name(inputs, func_name="scribble")
         image = Image.fromarray(detected_map)
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Scribble2Image:
     def __init__(self, device: str) -> None:
@@ -489,7 +489,7 @@ class Scribble2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting scribble2image Inference")
         print(f'sketch device {self.device}')
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -526,7 +526,7 @@ class Scribble2Image:
         updated_image_path = get_new_image_name(image_path, func_name="scribble2image")
         real_image = Image.fromarray(x_samples[0])  # default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Image2Pose:
     def __init__(self) -> None:
@@ -534,7 +534,7 @@ class Image2Pose:
         self.detector = OpenposeDetector()
         self.resolution = 512
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2pose Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -547,7 +547,7 @@ class Image2Pose:
         updated_image_path = get_new_image_name(inputs, func_name="human-pose")
         image = Image.fromarray(detected_map)
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Pose2Image:
     def __init__(self, device: str) -> None:
@@ -568,7 +568,7 @@ class Pose2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting pose2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -603,7 +603,7 @@ class Pose2Image:
         updated_image_path = get_new_image_name(image_path, func_name="pose2image")
         real_image = Image.fromarray(x_samples[0])  # default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Image2Seg:
     def __init__(self) -> None:
@@ -611,7 +611,7 @@ class Image2Seg:
         self.detector = UniformerDetector()
         self.resolution = 512
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2seg Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -624,7 +624,7 @@ class Image2Seg:
         updated_image_path = get_new_image_name(inputs, func_name="segmentation")
         image = Image.fromarray(detected_map)
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Seg2Image:
     def __init__(self, device: str) -> None:
@@ -645,7 +645,7 @@ class Seg2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting seg2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -680,7 +680,7 @@ class Seg2Image:
         updated_image_path = get_new_image_name(image_path, func_name="segment2image")
         real_image = Image.fromarray(x_samples[0])  # default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Image2Depth:
     def __init__(self) -> None:
@@ -688,7 +688,7 @@ class Image2Depth:
         self.detector = MidasDetector()
         self.resolution = 512
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2depth Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -701,7 +701,7 @@ class Image2Depth:
         updated_image_path = get_new_image_name(inputs, func_name="depth")
         image = Image.fromarray(detected_map)
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Depth2Image:
     def __init__(self, device: str) -> None:
@@ -722,7 +722,7 @@ class Depth2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting depth2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -750,7 +750,7 @@ class Depth2Image:
         updated_image_path = get_new_image_name(image_path, func_name="depth2image")
         real_image = Image.fromarray(x_samples[0])  # default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Image2Normal:
     def __init__(self) -> None:
@@ -759,7 +759,7 @@ class Image2Normal:
         self.resolution = 512
         self.bg_threshold = 0.4
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting image2 normal Inference")
         image = Image.open(inputs)
         image = np.array(image)
@@ -772,7 +772,7 @@ class Image2Normal:
         updated_image_path = get_new_image_name(inputs, func_name="normal-map")
         image = Image.fromarray(detected_map)
         image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class Normal2Image:
     def __init__(self, device: str) -> None:
@@ -793,7 +793,7 @@ class Normal2Image:
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-    def inference(self, inputs: str) -> Path:
+    def inference(self, inputs: str) -> str:
         print("===>Starting normal2image Inference")
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -829,7 +829,7 @@ class Normal2Image:
         updated_image_path = get_new_image_name(image_path, func_name="normal2image")
         real_image = Image.fromarray(x_samples[0])  # default the index0 image
         real_image.save(updated_image_path)
-        return updated_image_path
+        return str(updated_image_path)
 
 class BlipVqa:
     def __init__(self, device: str) -> None:
@@ -950,40 +950,40 @@ class ConversationBot:
             return_intermediate_steps=True,
             agent_kwargs={'prefix': VISUAL_CHATGPT_PREFIX, 'format_instructions': VISUAL_CHATGPT_FORMAT_INSTRUCTIONS, 'suffix': VISUAL_CHATGPT_SUFFIX}, )
 
-def run_text(self, text: str, state: list) -> tuple:
-        print("===============Running run_text =============")
-        print("Inputs:", text, state)
-        print(f"======>Previous memory:\n {self.agent.memory}")
-        self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
-        res = self.agent({"input": text})
-        print(f"======>Current memory:\n {self.agent.memory}")
-        response = re.sub('(image/\S*png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
-        state = state + [(text, response)]
-        print("Outputs:", state)
-        return state, state
+    def run_text(self, text: str, state: list) -> tuple:
+            print("===============Running run_text =============")
+            print("Inputs:", text, state)
+            print(f"======>Previous memory:\n {self.agent.memory}")
+            self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
+            res = self.agent({"input": text})
+            print(f"======>Current memory:\n {self.agent.memory}")
+            response = re.sub('(image/\S*png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
+            state = state + [(text, response)]
+            print("Outputs:", state)
+            return state, state
 
-def run_image(self, image: str, state: list, txt: str) -> tuple:
-        print("===============Running run_image =============")
-        print("Inputs:", image, state)
-        print(f"======>Previous memory:\n {self.agent.memory}")
-        image_filename = Path('image') / f"{str(uuid.uuid4())[:8]}.png"
-        print("======>Auto Resize Image...")
-        img = Image.open(image.name)
-        width, height = img.size
-        ratio = min(512 / width, 512 / height)
-        width_new, height_new = (round(width * ratio), round(height * ratio))
-        img = img.resize((width_new, height_new))
-        img = img.convert('RGB')
-        img.save(image_filename, "PNG")
-        print(f"Resize image form {width}x{height} to {width_new}x{height_new}")
-        description = self.i2t.inference(image_filename)
-        Human_prompt: str = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
-        AI_prompt: str = "Received.  "
-        self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
-        print(f"======>Current memory:\n {self.agent.memory}")
-        state = state + [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
-        print("Outputs:", state)
-        return state, state, f'{txt} {image_filename} '
+    def run_image(self, image: str, state: list, txt: str) -> tuple:
+            print("===============Running run_image =============")
+            print("Inputs:", image, state)
+            print(f"======>Previous memory:\n {self.agent.memory}")
+            image_filename = Path('image') / f"{str(uuid.uuid4())[:8]}.png"
+            print("======>Auto Resize Image...")
+            img = Image.open(image.name)
+            width, height = img.size
+            ratio = min(512 / width, 512 / height)
+            width_new, height_new = (round(width * ratio), round(height * ratio))
+            img = img.resize((width_new, height_new))
+            img = img.convert('RGB')
+            img.save(image_filename, "PNG")
+            print(f"Resize image form {width}x{height} to {width_new}x{height_new}")
+            description = self.i2t.inference(str(image_filename))
+            Human_prompt: str = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
+            AI_prompt: str = "Received.  "
+            self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
+            print(f"======>Current memory:\n {self.agent.memory}")
+            state = state + [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
+            print("Outputs:", state)
+            return state, state, f'{txt} {image_filename} '
 
 if __name__ == '__main__':
     bot = ConversationBot()
