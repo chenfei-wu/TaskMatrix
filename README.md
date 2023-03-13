@@ -8,6 +8,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Open%20in%20Spaces-blue" alt="Open in Spaces">
 </a>
 
+<a src="https://colab.research.google.com/assets/colab-badge.svg" href="https://colab.research.google.com/drive/11BtP3h-w0dZjA-X8JsS9_eo8OeGYvxXB">
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">
+</a>
 
 ## Updates:
 
@@ -38,7 +41,10 @@ By leveraging both general and deep knowledge, we aim at building an AI that is 
 
 ```
 # clone the repo
-git clone https://github.com/microsoft/visual-chatgpt.git && cd visual-chatgpt
+git clone https://github.com/microsoft/visual-chatgpt.git
+
+# Go to directory
+cd visual-chatgpt
 
 # create a new environment
 conda create -n visgpt python=3.8
@@ -57,9 +63,8 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
     
     
-# Advice for 1 Tesla T4 15GB                         
-python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,Text2Image_cuda:0,
-                                VisualQuestionAnswering_cuda:0,InstructPix2Pix_cuda:0"
+# Advice for 1 Tesla T4 15GB  (Google Colab)                       
+python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
                                 
 # Advice for 4 Tesla V100 32GB                            
 python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
