@@ -23,7 +23,7 @@ conda create -n visgpt python=3.8
 conda activate visgpt
 
 #  prepare the basic environments
-pip install -r requirement.txt
+pip install -r requirements.txt
 
 # download the visual foundation models
 bash download.sh
