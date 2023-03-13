@@ -4,6 +4,27 @@
 
 See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with Visual Foundation Models</font>](https://arxiv.org/abs/2303.04671)
 
+<a src="https://img.shields.io/badge/%F0%9F%A4%97-Open%20in%20Spaces-blue" href="https://huggingface.co/spaces/microsoft/visual_chatgpt">
+    <img src="https://img.shields.io/badge/%F0%9F%A4%97-Open%20in%20Spaces-blue" alt="Open in Spaces">
+</a>
+
+
+## Updates:
+
+- Add custom GPU/CPU assignment
+- Add windows support
+- Merge HuggingFace ControlNet, Remove download.sh
+- Add Prompt Decorator
+- Add HuggingFace and Colab Demo
+- Clean Requirements
+
+
+## Insight & Goal:
+One the one hand, ChatGPT (or LLMs) serves as a general interface that provides a broad and diverse understanding of a
+wide range of topics. On the other hand, Foundation Models serve as domain experts by providing deep knowledge in specific domains.
+By leveraging both general and deep knowledge, we aim at building an AI that is capable of handling a various of tasks.
+
+
 ## Demo 
 <img src="./assets/demo_short.gif" width="750">
 
@@ -16,6 +37,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 ## Quick Start
 
 ```
+# clone the repo
+git clone https://github.com/microsoft/visual-chatgpt.git && cd visual-chatgpt
+
 # create a new environment
 conda create -n visgpt python=3.8
 
@@ -23,41 +47,57 @@ conda create -n visgpt python=3.8
 conda activate visgpt
 
 #  prepare the basic environments
-pip install -r requirement.txt
-
-# download the visual foundation models
-bash download.sh
+pip install -r requirements.txt
 
 # prepare your private openAI private key
 export OPENAI_API_KEY={Your_Private_Openai_Key}
 
-# create a folder to save images
-mkdir ./image
-
 # Start Visual ChatGPT !
-python visual_chatgpt.py
+# Advice for CPU Users
+python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
+    
+    
+# Advice for 1 Tesla T4 15GB                         
+python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,Text2Image_cuda:0,
+                                VisualQuestionAnswering_cuda:0,InstructPix2Pix_cuda:0"
+                                
+# Advice for 4 Tesla V100 32GB                            
+python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
+    Text2Image_cuda:1,Image2Canny_cpu,CannyText2Image_cuda:1,
+    Image2Depth_cpu,DepthText2Image_cuda:1,VisualQuestionAnswering_cuda:2,
+    InstructPix2Pix_cuda:2,Image2Scribble_cpu,ScribbleText2Image_cuda:2,
+    Image2Seg_cpu,SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
+    Image2Hed_cpu,HedText2Image_cuda:3,Image2Normal_cpu,
+    NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
+                             
 ```
 
 ## GPU memory usage
-Here we list the GPU memory usage of each visual foundation model, one can modify ``self.tools`` with fewer visual foundation models to save your GPU memory:
+Here we list the GPU memory usage of each visual foundation model, you can specify which one you like:
 
-| Foundation Model        | Memory Usage (MB) |
+| Foundation Model        | GPU Memory (MB) |
 |------------------------|-------------------|
 | ImageEditing           | 6667              |
-| ImageCaption           | 1755              |
-| T2I                    | 6677              |
-| canny2image            | 5540              |
-| line2image             | 6679              |
-| hed2image              | 6679              |
-| scribble2image         | 6679              |
-| pose2image             | 6681              |
-| BLIPVQA                | 2709              |
-| seg2image              | 5540              |
-| depth2image            | 6677              |
-| normal2image           | 3974              |
-| InstructPix2Pix        | 2795              |
-
-
+| InstructPix2Pix        | 4929              |
+| Text2Image             | 6677              |
+| ImageCaptioning        | 1755              |
+| Image2Canny            | 0                 |
+| CannyText2Image        | 5540              |
+| Image2Line             | 0                 |
+| LineText2Image         | 6679              |
+| Image2Hed              | 0                 |
+| HedText2Image          | 6679              |
+| Image2Scribble         | 0                 |
+| ScribbleText2Image     | 6679              |
+| Image2Pose             | 0                 |
+| PoseText2Image         | 6681              |
+| Image2Seg              | 919               |
+| SegText2Image          | 5540              |
+| Image2Depth            | 0                 |
+| DepthText2Image        | 6677              |
+| Image2Normal           | 0                 |
+| NormalText2Image       | 6303              |
+| VisualQuestionAnswering| 2709              |
 
 ## Acknowledgement
 We appreciate the open source of the following projects:
@@ -70,4 +110,7 @@ We appreciate the open source of the following projects:
 [CLIPSeg](https://github.com/timojl/clipseg) &#8194;
 [BLIP](https://github.com/salesforce/BLIP) &#8194;
 
+## Contact Information
+For help or issues using the Visual ChatGPT, please submit a GitHub issue.
 
+For other communications, please contact Chenfei WU (chewu@microsoft.com) or Nan DUAN (nanduan@microsoft.com).
