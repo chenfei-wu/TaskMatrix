@@ -84,13 +84,12 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
     print(f"hitory_memory:{history_memory}, n_tokens: {n_tokens}")
     if n_tokens < keep_last_n_words:
         return history_memory
-    else:
-        paragraphs = history_memory.split('\n')
-        last_n_tokens = n_tokens
-        while last_n_tokens >= keep_last_n_words:
-            last_n_tokens = last_n_tokens - len(paragraphs[0].split(' '))
-            paragraphs = paragraphs[1:]
-        return '\n' + '\n'.join(paragraphs)
+    paragraphs = history_memory.split('\n')
+    last_n_tokens = n_tokens
+    while last_n_tokens >= keep_last_n_words:
+        last_n_tokens = last_n_tokens - len(paragraphs[0].split(' '))
+        paragraphs = paragraphs[1:]
+    return '\n' + '\n'.join(paragraphs)
 
 def get_new_image_name(org_img_name, func_name="update"):
     head_tail = os.path.split(org_img_name)
