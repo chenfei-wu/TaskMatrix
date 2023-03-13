@@ -7,7 +7,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, CLIPSegProcessor, 
 import torch
 from diffusers import StableDiffusionPipeline
 from diffusers import StableDiffusionInstructPix2PixPipeline, EulerAncestralDiscreteScheduler
-import os
 from langchain.agents.initialize import initialize_agent
 from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
