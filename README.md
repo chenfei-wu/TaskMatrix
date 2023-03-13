@@ -23,9 +23,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 
 
 ## Insight & Goal:
-One the one hand, ChatGPT (or LLMs) serves as a general interface that provides a broad and diverse understanding of a
-wide range of topics. On the other hand, Foundation Models serve as domain experts by providing deep knowledge in specific domains.
-By leveraging both general and deep knowledge, we aim at building an AI that is capable of handling a various of tasks.
+One the one hand, **ChatGPT (or LLMs)** serves as a **general interface** that provides a broad and diverse understanding of a
+wide range of topics. On the other hand, **Foundation Models** serve as **domain experts** by providing deep knowledge in specific domains.
+By leveraging **both general and deep knowledge**, we aim at building an AI that is capable of handling a various of tasks.
 
 
 ## Demo 
@@ -61,8 +61,7 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 # Start Visual ChatGPT !
 # Advice for CPU Users
 python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
-    
-    
+
 # Advice for 1 Tesla T4 15GB  (Google Colab)                       
 python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
                                 
