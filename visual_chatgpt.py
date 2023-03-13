@@ -69,6 +69,7 @@ Thought: Do I need to use a tool? {agent_scratchpad}"""
 
 os.makedirs('image', exist_ok=True)
 
+
 def seed_everything(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -154,7 +155,10 @@ class ImageEditing:
         print("Initializing ImageEditing to %s" % device)
         self.device = device
         self.mask_former = MaskFormer(device=self.device)
-        self.inpaint = StableDiffusionInpaintPipeline.from_pretrained("runwayml/stable-diffusion-inpainting").to(device)
+        self.revision = 'fp16' if 'cuda' in device else None
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.inpaint = StableDiffusionInpaintPipeline.from_pretrained(
+            "runwayml/stable-diffusion-inpainting", revision=self.revision, torch_dtype=self.torch_dtype).to(device)
 
     @prompts(name="Remove Something From The Photo",
              description="useful when you want to remove and object or something from the photo "
@@ -190,8 +194,10 @@ class InstructPix2Pix:
     def __init__(self, device):
         print("Initializing InstructPix2Pix to %s" % device)
         self.device = device
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained("timbrooks/instruct-pix2pix",
-                                                                           safety_checker=None).to(device)
+                                                                           safety_checker=None,
+                                                                           torch_dtype=self.torch_dtype).to(device)
         self.pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(self.pipe.scheduler.config)
 
     @prompts(name="Instruct Image Using Text",
@@ -216,7 +222,9 @@ class Text2Image:
     def __init__(self, device):
         print("Initializing Text2Image to %s" % device)
         self.device = device
-        self.pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5",
+                                                            torch_dtype=self.torch_dtype)
         self.text_refine_tokenizer = AutoTokenizer.from_pretrained("Gustavosta/MagicPrompt-Stable-Diffusion")
         self.text_refine_model = AutoModelForCausalLM.from_pretrained("Gustavosta/MagicPrompt-Stable-Diffusion")
         self.text_refine_gpt2_pipe = pipeline("text-generation", model=self.text_refine_model,
@@ -241,15 +249,16 @@ class ImageCaptioning:
     def __init__(self, device):
         print("Initializing ImageCaptioning to %s" % device)
         self.device = device
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
         self.model = BlipForConditionalGeneration.from_pretrained(
-            "Salesforce/blip-image-captioning-base").to(self.device)
+            "Salesforce/blip-image-captioning-base", torch_dtype=self.torch_dtype).to(self.device)
 
     @prompts(name="Get Photo Description",
              description="useful when you want to know what is inside the photo. receives image_path as input. "
                          "The input to this tool should be a string, representing the image_path. ")
     def inference(self, image_path):
-        inputs = self.processor(Image.open(image_path), return_tensors="pt").to(self.device)
+        inputs = self.processor(Image.open(image_path), return_tensors="pt").to(self.device, self.torch_dtype)
         out = self.model.generate(**inputs)
         captions = self.processor.decode(out[0], skip_special_tokens=True)
         print(f"\nProcessed ImageCaptioning, Input Image: {image_path}, Output Text: {captions}")
@@ -283,9 +292,12 @@ class Image2Canny:
 class CannyText2Image:
     def __init__(self, device):
         print("Initializing CannyText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-canny")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-canny",
+                                                          torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None)
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype)
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
         self.seed = -1
@@ -336,9 +348,12 @@ class Image2Line:
 class LineText2Image:
     def __init__(self, device):
         print("Initializing LineText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-mlsd")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-mlsd",
+                                                          torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype
         )
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
@@ -391,9 +406,12 @@ class Image2Hed:
 class HedText2Image:
     def __init__(self, device):
         print("Initializing HedText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-hed")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-hed",
+                                                          torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype
         )
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
@@ -446,9 +464,12 @@ class Image2Scribble:
 class ScribbleText2Image:
     def __init__(self, device):
         print("Initializing ScribbleText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-scribble")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-scribble",
+                                                          torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype
         )
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
@@ -498,9 +519,12 @@ class Image2Pose:
 class PoseText2Image:
     def __init__(self, device):
         print("Initializing PoseText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-openpose")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-openpose",
+                                                          torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None)
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype)
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
         self.num_inference_steps = 20
@@ -602,9 +626,12 @@ class Image2Seg:
 class SegText2Image:
     def __init__(self, device):
         print("Initializing SegText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-seg")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-seg",
+                                                          torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None)
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype)
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
         self.seed = -1
@@ -658,9 +685,12 @@ class Image2Depth:
 class DepthText2Image:
     def __init__(self, device):
         print("Initializing DepthText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-depth")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained(
+            "fusing/stable-diffusion-v1-5-controlnet-depth", torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None)
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype)
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
         self.seed = -1
@@ -726,9 +756,12 @@ class Image2Normal:
 class NormalText2Image:
     def __init__(self, device):
         print("Initializing NormalText2Image to %s" % device)
-        self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-normal")
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained(
+            "fusing/stable-diffusion-v1-5-controlnet-normal", torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None)
+            "runwayml/stable-diffusion-v1-5", controlnet=self.controlnet, safety_checker=None,
+            torch_dtype=self.torch_dtype)
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(device)
         self.seed = -1
@@ -760,9 +793,11 @@ class NormalText2Image:
 class VisualQuestionAnswering:
     def __init__(self, device):
         print("Initializing VisualQuestionAnswering to %s" % device)
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.device = device
         self.processor = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
-        self.model = BlipForQuestionAnswering.from_pretrained("Salesforce/blip-vqa-base").to(self.device)
+        self.model = BlipForQuestionAnswering.from_pretrained(
+            "Salesforce/blip-vqa-base", torch_dtype=self.torch_dtype).to(self.device)
 
     @prompts(name="Answer Question About The Image",
              description="useful when you need an answer for a question based on an image. "
@@ -771,7 +806,7 @@ class VisualQuestionAnswering:
     def inference(self, inputs):
         image_path, question = inputs.split(",")
         raw_image = Image.open(image_path).convert('RGB')
-        inputs = self.processor(raw_image, question, return_tensors="pt").to(self.device)
+        inputs = self.processor(raw_image, question, return_tensors="pt").to(self.device, self.torch_dtype)
         out = self.model.generate(**inputs)
         answer = self.processor.decode(out[0], skip_special_tokens=True)
         print(f"\nProcessed VisualQuestionAnswering, Input Image: {image_path}, Input Question: {question}, "
@@ -849,8 +884,7 @@ class ConversationBot:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default="ImageCaptioning_cuda:0,ImageEditing_cuda:0,Text2Image_cuda:0,\
-                                                    VisualQuestionAnswering_cuda:0,InstructPix2Pix_cuda:0")
+    parser.add_argument('--load', type=str, default="ImageCaptioning_cuda:0,Text2Image_cuda:0")
     args = parser.parse_args()
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)
@@ -872,4 +906,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-        demo.launch(server_name="0.0.0.0", server_port=7861)
+        demo.launch(server_name="0.0.0.0", server_port=7868)

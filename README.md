@@ -85,7 +85,7 @@ Here we list the GPU memory usage of each visual foundation model, you can speci
 | Foundation Model        | GPU Memory (MB) |
 |------------------------|-------------------|
 | ImageEditing           | 6667              |
-| InstructPix2Pix        | 4929              |
+| InstructPix2Pix        | 2795              |
 | Text2Image             | 6677              |
 | ImageCaptioning        | 1755              |
 | Image2Canny            | 0                 |
@@ -103,7 +103,7 @@ Here we list the GPU memory usage of each visual foundation model, you can speci
 | Image2Depth            | 0                 |
 | DepthText2Image        | 6677              |
 | Image2Normal           | 0                 |
-| NormalText2Image       | 6303              |
+| NormalText2Image       | 3974              |
 | VisualQuestionAnswering| 2709              |
 
 ## Acknowledgement
