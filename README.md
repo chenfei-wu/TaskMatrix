@@ -62,6 +62,13 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 set OPENAI_API_KEY={Your_Private_Openai_Key}
 
 # Start Visual ChatGPT !
+# You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
+# Visual Foundation Model to use and where it will be loaded to
+# The model and device are sperated by underline '_', the different models are seperated by comma ','
+# The available Visual Foundation Models can be found in the following table
+# For example, if you want to load ImageCaptioning to cpu and Text2Image to cuda:0
+# You can use: "ImageCaptioning_cpu,Text2Image_cuda:0"
+
 # Advice for CPU Users
 python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
 
@@ -83,28 +90,28 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
 Here we list the GPU memory usage of each visual foundation model, you can specify which one you like:
 
 | Foundation Model        | GPU Memory (MB) |
-|------------------------|-------------------|
-| ImageEditing           | 6667              |
-| InstructPix2Pix        | 2795              |
-| Text2Image             | 6677              |
-| ImageCaptioning        | 1755              |
-| Image2Canny            | 0                 |
-| CannyText2Image        | 5540              |
-| Image2Line             | 0                 |
-| LineText2Image         | 6679              |
-| Image2Hed              | 0                 |
-| HedText2Image          | 6679              |
-| Image2Scribble         | 0                 |
-| ScribbleText2Image     | 6679              |
-| Image2Pose             | 0                 |
-| PoseText2Image         | 6681              |
-| Image2Seg              | 919               |
-| SegText2Image          | 5540              |
-| Image2Depth            | 0                 |
-| DepthText2Image        | 6677              |
-| Image2Normal           | 0                 |
-| NormalText2Image       | 3974              |
-| VisualQuestionAnswering| 2709              |
+|------------------------|-----------------|
+| ImageEditing           | 3981            |
+| InstructPix2Pix        | 2827            |
+| Text2Image             | 3385            |
+| ImageCaptioning        | 1209            |
+| Image2Canny            | 0               |
+| CannyText2Image        | 3531            |
+| Image2Line             | 0               |
+| LineText2Image         | 3529            |
+| Image2Hed              | 0               |
+| HedText2Image          | 3529            |
+| Image2Scribble         | 0               |
+| ScribbleText2Image     | 3531            |
+| Image2Pose             | 0               |
+| PoseText2Image         | 3529            |
+| Image2Seg              | 919             |
+| SegText2Image          | 3529            |
+| Image2Depth            | 0               |
+| DepthText2Image        | 3531            |
+| Image2Normal           | 0               |
+| NormalText2Image       | 3529            |
+| VisualQuestionAnswering| 1495            |
 
 ## Acknowledgement
 We appreciate the open source of the following projects:

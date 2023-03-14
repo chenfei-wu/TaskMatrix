@@ -225,11 +225,10 @@ class Text2Image:
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5",
                                                             torch_dtype=self.torch_dtype)
-        self.text_refine_tokenizer = AutoTokenizer.from_pretrained("Gustavosta/MagicPrompt-Stable-Diffusion")
-        self.text_refine_model = AutoModelForCausalLM.from_pretrained("Gustavosta/MagicPrompt-Stable-Diffusion")
-        self.text_refine_gpt2_pipe = pipeline("text-generation", model=self.text_refine_model,
-                                              tokenizer=self.text_refine_tokenizer, device=self.device)
         self.pipe.to(device)
+        self.a_prompt = 'best quality, extremely detailed'
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, ' \
+                        'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image From User Input Text",
              description="useful when you want to generate an image from a user input text and save it to a file. "
@@ -237,11 +236,11 @@ class Text2Image:
                          "The input to this tool should be a string, representing the text used to generate image. ")
     def inference(self, text):
         image_filename = os.path.join('image', str(uuid.uuid4())[0:8] + ".png")
-        refined_text = self.text_refine_gpt2_pipe(text)[0]["generated_text"]
-        image = self.pipe(refined_text).images[0]
+        prompt = text + ', ' + self.a_prompt
+        image = self.pipe(prompt, negative_prompt=self.n_prompt).images[0]
         image.save(image_filename)
         print(
-            f"\nProcessed Text2Image, Input Text: {text}, Refined Text: {refined_text}, Output Image: {image_filename}")
+            f"\nProcessed Text2Image, Input Text: {text}, Output Image: {image_filename}")
         return image_filename
 
 
