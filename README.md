@@ -64,7 +64,7 @@ set OPENAI_API_KEY={Your_Private_Openai_Key}
 # Start Visual ChatGPT !
 # You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
 # Visual Foundation Model to use and where it will be loaded to
-# The model and device are sperated by underline '_', the different models are seperated by comma ','
+# The model and device are separated by underline '_', the different models are separated by comma ','
 # The available Visual Foundation Models can be found in the following table
 # For example, if you want to load ImageCaptioning to cpu and Text2Image to cuda:0
 # You can use: "ImageCaptioning_cpu,Text2Image_cuda:0"
