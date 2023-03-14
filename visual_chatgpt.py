@@ -119,7 +119,7 @@ def get_new_image_name(org_img_name, func_name="update"):
 
 class MaskFormer:
     def __init__(self, device):
-        print("Initializing MaskFormer to %s" % device)
+        print(f"Initializing MaskFormer to {device}")
         self.device = device
         self.processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
         self.model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
@@ -217,9 +217,7 @@ class InstructPix2Pix:
 
 class Text2Image:
     def __init__(self, device):
-
         print(f"Initializing Text2Image to {device}")
-
         self.device = device
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5",
@@ -290,7 +288,7 @@ class Image2Canny:
 
 class CannyText2Image:
     def __init__(self, device):
-        print("Initializing CannyText2Image to %s" % device)
+        print(f"Initializing CannyText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-canny",
                                                           torch_dtype=self.torch_dtype)
@@ -302,7 +300,7 @@ class CannyText2Image:
         self.seed = -1
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, ' \
-                        'fewer digits, cropped, worst quality, low quality'
+                            'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Canny Image",
              description="useful when you want to generate a new real image from both the user desciption and a canny image."
@@ -315,7 +313,7 @@ class CannyText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="canny2image")
@@ -346,7 +344,7 @@ class Image2Line:
 
 class LineText2Image:
     def __init__(self, device):
-        print("Initializing LineText2Image to %s" % device)
+        print(f"Initializing LineText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-mlsd",
                                                           torch_dtype=self.torch_dtype)
@@ -359,7 +357,7 @@ class LineText2Image:
         self.seed = -1
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, ' \
-                        'fewer digits, cropped, worst quality, low quality'
+                            'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Line Image",
              description="useful when you want to generate a new real image from both the user desciption "
@@ -369,11 +367,11 @@ class LineText2Image:
                          "The input to this tool should be a comma seperated string of two, "
                          "representing the image_path and the user description. ")
     def inference(self, inputs):
-         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
+        image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="line2image")
@@ -404,7 +402,7 @@ class Image2Hed:
 
 class HedText2Image:
     def __init__(self, device):
-        print("Initializing HedText2Image to %s" % device)
+        print(f"Initializing HedText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-hed",
                                                           torch_dtype=self.torch_dtype)
@@ -417,7 +415,7 @@ class HedText2Image:
         self.seed = -1
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, ' \
-                        'fewer digits, cropped, worst quality, low quality'
+                            'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Soft Hed Boundary Image",
              description="useful when you want to generate a new real image from both the user desciption "
@@ -431,7 +429,7 @@ class HedText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-<prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="hed2image")
@@ -439,7 +437,6 @@ class HedText2Image:
         print(f"\nProcessed HedText2Image, Input Hed: {image_path}, Input Text: {instruct_text}, "
               f"Output Image: {updated_image_path}")
         return updated_image_path
-
 
 
 class Image2Scribble:
@@ -463,7 +460,7 @@ class Image2Scribble:
 
 class ScribbleText2Image:
     def __init__(self, device):
-        print("Initializing ScribbleText2Image to %s" % device)
+        print(f"Initializing ScribbleText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-scribble",
                                                           torch_dtype=self.torch_dtype)
@@ -476,7 +473,7 @@ class ScribbleText2Image:
         self.seed = -1
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, ' \
-                        'fewer digits, cropped, worst quality, low quality'
+                            'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Sketch Image",
              description="useful when you want to generate a new real image from both the user desciption and "
@@ -488,14 +485,14 @@ class ScribbleText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="scribble2image")
         image.save(updated_image_path)
         print(f"\nProcessed ScribbleText2Image, Input Scribble: {image_path}, Input Text: {instruct_text}, "
               f"Output Image: {updated_image_path}")
-        return 
+        return updated_image_path
 
 
 class Image2Pose:
@@ -518,7 +515,7 @@ class Image2Pose:
 
 class PoseText2Image:
     def __init__(self, device):
-        print("Initializing PoseText2Image to %s" % device)
+        print(f"Initializing PoseText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-openpose",
                                                           torch_dtype=self.torch_dtype)
@@ -532,7 +529,7 @@ class PoseText2Image:
         self.unconditional_guidance_scale = 9.0
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit,' \
-                        ' fewer digits, cropped, worst quality, low quality'
+                            ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Pose Image",
              description="useful when you want to generate a new real image from both the user desciption "
@@ -546,7 +543,7 @@ class PoseText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="pose2image")
@@ -625,7 +622,7 @@ class Image2Seg:
 
 class SegText2Image:
     def __init__(self, device):
-        print("Initializing SegText2Image to %s" % device)
+        print(f"Initializing SegText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-seg",
                                                           torch_dtype=self.torch_dtype)
@@ -637,7 +634,7 @@ class SegText2Image:
         self.seed = -1
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit,' \
-                        ' fewer digits, cropped, worst quality, low quality'
+                            ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Segmentations",
              description="useful when you want to generate a new real image from both the user desciption and segmentations. "
@@ -650,7 +647,7 @@ class SegText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="segment2image")
@@ -684,7 +681,7 @@ class Image2Depth:
 
 class DepthText2Image:
     def __init__(self, device):
-        print("Initializing DepthText2Image to %s" % device)
+        print(f"Initializing DepthText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(
             "fusing/stable-diffusion-v1-5-controlnet-depth", torch_dtype=self.torch_dtype)
@@ -696,7 +693,7 @@ class DepthText2Image:
         self.seed = -1
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit,' \
-                        ' fewer digits, cropped, worst quality, low quality'
+                            ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Depth",
              description="useful when you want to generate a new real image from both the user desciption and depth image. "
@@ -709,7 +706,7 @@ class DepthText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="depth2image")
@@ -717,7 +714,6 @@ class DepthText2Image:
         print(f"\nProcessed DepthText2Image, Input Depth: {image_path}, Input Text: {instruct_text}, "
               f"Output Image: {updated_image_path}")
         return updated_image_path
-
 
 
 class Image2Normal:
@@ -756,7 +752,7 @@ class Image2Normal:
 
 class NormalText2Image:
     def __init__(self, device):
-        print("Initializing NormalText2Image to %s" % device)
+        print(f"Initializing NormalText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(
             "fusing/stable-diffusion-v1-5-controlnet-normal", torch_dtype=self.torch_dtype)
@@ -768,7 +764,7 @@ class NormalText2Image:
         self.seed = -1
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit,' \
-                        ' fewer digits, cropped, worst quality, low quality'
+                            ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Normal Map",
              description="useful when you want to generate a new real image from both the user desciption and normal map. "
@@ -781,7 +777,7 @@ class NormalText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = instruct_text + ', ' + self.a_prompt
+        prompt = f'{instruct_text}, {self.a_prompt}'
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(image_path, func_name="normal2image")
@@ -825,12 +821,12 @@ class ConversationBot:
         self.llm = OpenAI(temperature=0)
         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 
-        self.models = dict()
+        self.models = {}
         for class_name, device in load_dict.items():
             self.models[class_name] = globals()[class_name](device=device)
 
         self.tools = []
-        for class_name, instance in self.models.items():
+        for instance in self.models.values():
             for e in dir(instance):
                 if e.startswith('inference'):
                     func = getattr(instance, e)
@@ -857,7 +853,7 @@ class ConversationBot:
         return state, state
 
     def run_image(self, image, state, txt):
-        image_filename = os.path.join('image', str(uuid.uuid4())[:8] + ".png")
+        image_filename = os.path.join('image', f"{str(uuid.uuid4())[:8]}.png")
         print("======>Auto Resize Image...")
         img = Image.open(image.name)
         width, height = img.size
@@ -870,17 +866,13 @@ class ConversationBot:
         img.save(image_filename, "PNG")
         print(f"Resize image form {width}x{height} to {width_new}x{height_new}")
         description = self.models['ImageCaptioning'].inference(image_filename)
-        Human_prompt = "\nHuman: provide a figure named {}. The description is: {}. " \
-                       "This information helps you to understand this image, " \
-                       "but you should use tools to finish following tasks, " \
-                       "rather than directly imagine from my description. If you understand, say \"Received\". \n".format(
-            image_filename, description)
+        Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
         AI_prompt = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
         state = state + [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
-        return state, state, txt + ' ' + image_filename + ' '
+        return state, state, f'{txt} {image_filename} '
 
 
 if __name__ == '__main__':
