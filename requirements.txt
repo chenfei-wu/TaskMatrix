@@ -1,6 +1,7 @@
 langchain==0.0.101
 torch==1.12.1
 torchvision==0.13.1
+gradio==3.20.1
 accelerate
 addict
 albumentations
@@ -8,7 +9,6 @@ basicsr
 controlnet-aux
 diffusers
 einops
-gradio
 imageio
 imageio-ffmpeg
 invisible-watermark
