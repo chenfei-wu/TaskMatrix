@@ -37,48 +37,30 @@ By leveraging **both general and deep knowledge**, we aim at building an AI that
 <p align="center"><img src="./assets/figure.jpg" alt="Logo"></p>
 
 
-## Quick Start
+## Quick Start For Google Colab
 
 ```
 # clone the repo
-git clone https://github.com/microsoft/visual-chatgpt.git
+!git clone https://github.com/Armkas/visual-chatgpt-colab.git
 
 # Go to directory
-cd visual-chatgpt
+cd visual-chatgpt-colab
 
-# create a new environment
-conda create -n visgpt python=3.8
+# Use my branch
+!git checkout runWithCodlab
 
-# activate the new environment
-conda activate visgpt
+# Install
+!pip install -r requirements.txt
 
-#  prepare the basic environments
-pip install -r requirements.txt
-
-# prepare your private OpenAI key (for Linux)
-export OPENAI_API_KEY={Your_Private_Openai_Key}
-
-# prepare your private OpenAI key (for Windows)
-set OPENAI_API_KEY={Your_Private_Openai_Key}
+# Replace with your private OpenAI key (Must paid key)
+# Execute these 2 lines together
+import os
+os.environ["OPENAI_API_KEY"] = "sk-ooooooooooooooooooooooo"
 
 # Start Visual ChatGPT !
-# Advice for CPU Users
-python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
-
 # Advice for 1 Tesla T4 15GB  (Google Colab)                       
-python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
+!python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
                                 
-# Advice for 4 Tesla V100 32GB                            
-python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
-    Text2Image_cuda:1,Image2Canny_cpu,CannyText2Image_cuda:1,
-    Image2Depth_cpu,DepthText2Image_cuda:1,VisualQuestionAnswering_cuda:2,
-    InstructPix2Pix_cuda:2,Image2Scribble_cpu,ScribbleText2Image_cuda:2,
-    Image2Seg_cpu,SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
-    Image2Hed_cpu,HedText2Image_cuda:3,Image2Normal_cpu,
-    NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
-                             
-```
-
 ## GPU memory usage
 Here we list the GPU memory usage of each visual foundation model, you can specify which one you like:
 
