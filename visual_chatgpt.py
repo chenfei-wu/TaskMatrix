@@ -5,7 +5,7 @@ import torch
 import cv2
 import re
 import uuid
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 import argparse
 
@@ -858,6 +858,7 @@ class ConversationBot:
         image_filename = os.path.join('image', str(uuid.uuid4())[0:8] + ".png")
         print("======>Auto Resize Image...")
         img = Image.open(image.name)
+        img = ImageOps.exif_transpose(img)
         width, height = img.size
         ratio = min(512 / width, 512 / height)
         width_new, height_new = (round(width * ratio), round(height * ratio))
