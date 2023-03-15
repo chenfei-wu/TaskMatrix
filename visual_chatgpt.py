@@ -88,9 +88,11 @@ def prompts(name, description):
 
 
 def cut_dialogue_history(history_memory, keep_last_n_words=500):
+    if history_memory is None or len(history_memory) == 0:
+        return history_memory
     tokens = history_memory.split()
     n_tokens = len(tokens)
-    print(f"hitory_memory:{history_memory}, n_tokens: {n_tokens}")
+    print(f"history_memory:{history_memory}, n_tokens: {n_tokens}")
     if n_tokens < keep_last_n_words:
         return history_memory
     else:
@@ -163,16 +165,16 @@ class ImageEditing:
     @prompts(name="Remove Something From The Photo",
              description="useful when you want to remove and object or something from the photo "
                          "from its description or location. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the object need to be removed. ")
     def inference_remove(self, inputs):
-        image_path, to_be_removed_txt = inputs.split(",")
+        image_path, to_be_removed_txt = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         return self.inference_replace(f"{image_path},{to_be_removed_txt},background")
 
     @prompts(name="Replace Something From The Photo",
              description="useful when you want to replace an object from the object description or "
                          "location with another object from its description. "
-                         "The input to this tool should be a comma seperated string of three, "
+                         "The input to this tool should be a comma separated string of three, "
                          "representing the image_path, the object to be replaced, the object to be replaced with ")
     def inference_replace(self, inputs):
         image_path, to_be_replaced_txt, replace_with_txt = inputs.split(",")
@@ -203,7 +205,7 @@ class InstructPix2Pix:
     @prompts(name="Instruct Image Using Text",
              description="useful when you want to the style of the image to be like the text. "
                          "like: make it look like a painting. or make it like a robot. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the text. ")
     def inference(self, inputs):
         """Change style of image."""
@@ -305,10 +307,10 @@ class CannyText2Image:
                         'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Canny Image",
-             description="useful when you want to generate a new real image from both the user desciption and a canny image."
+             description="useful when you want to generate a new real image from both the user description and a canny image."
                          " like: generate a real image of a object or something from this canny image,"
                          " or generate a new real image of a object or something from this edge image. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description. ")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -333,7 +335,7 @@ class Image2Line:
     @prompts(name="Line Detection On Image",
              description="useful when you want to detect the straight line of the image. "
                          "like: detect the straight lines of this image, or straight line detection on image, "
-                         "or peform straight line detection on this image, or detect the straight line image of this image. "
+                         "or perform straight line detection on this image, or detect the straight line image of this image. "
                          "The input to this tool should be a string, representing the image_path")
     def inference(self, inputs):
         image = Image.open(inputs)
@@ -362,11 +364,11 @@ class LineText2Image:
                         'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Line Image",
-             description="useful when you want to generate a new real image from both the user desciption "
+             description="useful when you want to generate a new real image from both the user description "
                          "and a straight line image. "
                          "like: generate a real image of a object or something from this straight line image, "
                          "or generate a new real image of a object or something from this straight lines. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description. ")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -391,7 +393,7 @@ class Image2Hed:
     @prompts(name="Hed Detection On Image",
              description="useful when you want to detect the soft hed boundary of the image. "
                          "like: detect the soft hed boundary of this image, or hed boundary detection on image, "
-                         "or peform hed boundary detection on this image, or detect soft hed boundary image of this image. "
+                         "or perform hed boundary detection on this image, or detect soft hed boundary image of this image. "
                          "The input to this tool should be a string, representing the image_path")
     def inference(self, inputs):
         image = Image.open(inputs)
@@ -420,11 +422,11 @@ class HedText2Image:
                         'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Soft Hed Boundary Image",
-             description="useful when you want to generate a new real image from both the user desciption "
+             description="useful when you want to generate a new real image from both the user description "
                          "and a soft hed boundary image. "
                          "like: generate a real image of a object or something from this soft hed boundary image, "
                          "or generate a new real image of a object or something from this hed boundary. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -478,9 +480,9 @@ class ScribbleText2Image:
                         'fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Sketch Image",
-             description="useful when you want to generate a new real image from both the user desciption and "
+             description="useful when you want to generate a new real image from both the user description and "
                          "a scribble image or a sketch image. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -534,11 +536,11 @@ class PoseText2Image:
                         ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Pose Image",
-             description="useful when you want to generate a new real image from both the user desciption "
+             description="useful when you want to generate a new real image from both the user description "
                          "and a human pose image. "
                          "like: generate a real image of a human from this human pose image, "
                          "or generate a new real image of a human from this pose. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -602,7 +604,7 @@ class Image2Seg:
     @prompts(name="Segmentation On Image",
              description="useful when you want to detect segmentations of the image. "
                          "like: segment this image, or generate segmentations on this image, "
-                         "or peform segmentation on this image. "
+                         "or perform segmentation on this image. "
                          "The input to this tool should be a string, representing the image_path")
     def inference(self, inputs):
         image = Image.open(inputs)
@@ -639,10 +641,10 @@ class SegText2Image:
                         ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Segmentations",
-             description="useful when you want to generate a new real image from both the user desciption and segmentations. "
+             description="useful when you want to generate a new real image from both the user description and segmentations. "
                          "like: generate a real image of a object or something from this segmentation image, "
                          "or generate a new real image of a object or something from these segmentations. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -698,10 +700,10 @@ class DepthText2Image:
                         ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Depth",
-             description="useful when you want to generate a new real image from both the user desciption and depth image. "
+             description="useful when you want to generate a new real image from both the user description and depth image. "
                          "like: generate a real image of a object or something from this depth image, "
                          "or generate a new real image of a object or something from the depth map. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -769,10 +771,10 @@ class NormalText2Image:
                         ' fewer digits, cropped, worst quality, low quality'
 
     @prompts(name="Generate Image Condition On Normal Map",
-             description="useful when you want to generate a new real image from both the user desciption and normal map. "
+             description="useful when you want to generate a new real image from both the user description and normal map. "
                          "like: generate a real image of a object or something from this normal map, "
                          "or generate a new real image of a object or something from the normal map. "
-                         "The input to this tool should be a comma seperated string of two, "
+                         "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -801,9 +803,9 @@ class VisualQuestionAnswering:
     @prompts(name="Answer Question About The Image",
              description="useful when you need an answer for a question based on an image. "
                          "like: what is the background color of the last image, how many cats in this figure, what is in this figure. "
-                         "The input to this tool should be a comma seperated string of two, representing the image_path and the question")
+                         "The input to this tool should be a comma separated string of two, representing the image_path and the question")
     def inference(self, inputs):
-        image_path, question = inputs.split(",")
+        image_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         raw_image = Image.open(image_path).convert('RGB')
         inputs = self.processor(raw_image, question, return_tensors="pt").to(self.device, self.torch_dtype)
         out = self.model.generate(**inputs)
