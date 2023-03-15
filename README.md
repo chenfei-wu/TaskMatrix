@@ -25,7 +25,7 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 ## Insight & Goal:
 One the one hand, **ChatGPT (or LLMs)** serves as a **general interface** that provides a broad and diverse understanding of a
 wide range of topics. On the other hand, **Foundation Models** serve as **domain experts** by providing deep knowledge in specific domains.
-By leveraging **both general and deep knowledge**, we aim at building an AI that is capable of handling a various of tasks.
+By leveraging **both general and deep knowledge**, we aim at building an AI that is capable of handling a variety of tasks.
 
 
 ## Demo 
