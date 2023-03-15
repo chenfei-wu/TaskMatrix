@@ -9,7 +9,7 @@ from PIL import Image
 import numpy as np
 import argparse
 
-from transformers import AutoModelForCausalLM, AutoTokenizer, CLIPSegProcessor, CLIPSegForImageSegmentation
+from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 from transformers import pipeline, BlipProcessor, BlipForConditionalGeneration, BlipForQuestionAnswering
 from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
 

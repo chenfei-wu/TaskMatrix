@@ -25,7 +25,7 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 ## Insight & Goal:
 One the one hand, **ChatGPT (or LLMs)** serves as a **general interface** that provides a broad and diverse understanding of a
 wide range of topics. On the other hand, **Foundation Models** serve as **domain experts** by providing deep knowledge in specific domains.
-By leveraging **both general and deep knowledge**, we aim at building an AI that is capable of handling a various of tasks.
+By leveraging **both general and deep knowledge**, we aim at building an AI that is capable of handling various tasks.
 
 
 ## Demo 
@@ -64,7 +64,7 @@ set OPENAI_API_KEY={Your_Private_Openai_Key}
 # Start Visual ChatGPT !
 # You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
 # Visual Foundation Model to use and where it will be loaded to
-# The model and device are sperated by underline '_', the different models are seperated by comma ','
+# The model and device are separated by underline '_', the different models are separated by comma ','
 # The available Visual Foundation Models can be found in the following table
 # For example, if you want to load ImageCaptioning to cpu and Text2Image to cuda:0
 # You can use: "ImageCaptioning_cpu,Text2Image_cuda:0"
