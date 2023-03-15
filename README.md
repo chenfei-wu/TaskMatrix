@@ -39,52 +39,69 @@ By leveraging **both general and deep knowledge**, we aim at building an AI that
 
 ## Quick Start
 
-```
-# clone the repo
+
+### clone the repo
+```bash
 git clone https://github.com/microsoft/visual-chatgpt.git
+```
 
-# Go to directory
+### Go to directory
+```bash
 cd visual-chatgpt
+```
 
-# create a new environment
+### create a new environment
+```bash
 conda create -n visgpt python=3.8
+```
 
-# activate the new environment
+### activate the new environment
+```bash
 conda activate visgpt
+```
 
-#  prepare the basic environments
-pip install -r requirements.txt
+###  prepare the basic environments
+```bash
+pip install -r requirements.txt 
+```
 
-# prepare your private OpenAI key (for Linux)
+### prepare your private OpenAI key (for Linux)
+```bash
 export OPENAI_API_KEY={Your_Private_Openai_Key}
+```
 
-# prepare your private OpenAI key (for Windows)
+### prepare your private OpenAI key (for Windows)
+```bash
 set OPENAI_API_KEY={Your_Private_Openai_Key}
+```
 
-# Start Visual ChatGPT !
-# You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
-# Visual Foundation Model to use and where it will be loaded to
-# The model and device are sperated by underline '_', the different models are seperated by comma ','
-# The available Visual Foundation Models can be found in the following table
-# For example, if you want to load ImageCaptioning to cpu and Text2Image to cuda:0
-# You can use: "ImageCaptioning_cpu,Text2Image_cuda:0"
+### Start Visual ChatGPT !
+ ##### You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
+ ##### Visual Foundation Model to use and where it will be loaded to
+ ##### The model and device are sperated by underline '_', the different models are seperated by comma ','
+ ##### The available Visual Foundation Models can be found in the following table
+ ##### For example, if you want to load ImageCaptioning to cpu and Text2Image to cuda:0
+ ##### You can use: "ImageCaptioning_cpu,Text2Image_cuda:0"
 
-# Advice for CPU Users
+### Advice for CPU Users
+```bash
 python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
+```
 
-# Advice for 1 Tesla T4 15GB  (Google Colab)                       
+### Advice for 1 Tesla T4 15GB  (Google Colab)                       
+```bash
 python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
+```
                                 
-# Advice for 4 Tesla V100 32GB                            
-python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
+### Advice for 4 Tesla V100 32GB                            
+```python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
     Text2Image_cuda:1,Image2Canny_cpu,CannyText2Image_cuda:1,
     Image2Depth_cpu,DepthText2Image_cuda:1,VisualQuestionAnswering_cuda:2,
     InstructPix2Pix_cuda:2,Image2Scribble_cpu,ScribbleText2Image_cuda:2,
     Image2Seg_cpu,SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
     Image2Hed_cpu,HedText2Image_cuda:3,Image2Normal_cpu,
-    NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
-                             
-```
+    NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3" 
+ ```
 
 ## GPU memory usage
 Here we list the GPU memory usage of each visual foundation model, you can specify which one you like:
