@@ -92,7 +92,7 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
         return history_memory
     tokens = history_memory.split()
     n_tokens = len(tokens)
-    print("history_memory:{history_memory}, n_tokens: {n_tokens}")
+    print("history_memory:{}, n_tokens: {}").format(history_memory, n_tokens)
     if n_tokens < keep_last_n_words:
         return history_memory
     paragraphs = history_memory.split('\n')
@@ -586,7 +586,8 @@ class PoseText2Image:
         updated_image_path = get_new_image_name(
             image_path, func_name="pose2image")
         image.save(updated_image_path)
-        print("\nProcessed PoseText2Image, Input Pose: {}, Input Text: {}, Output Image: {}").format(image_path, instruct_text, updated_image_path)
+        print("\nProcessed PoseText2Image, Input Pose: {}, Input Text: {}, Output Image: {}").format(
+            image_path, instruct_text, updated_image_path)
         return updated_image_path
 
 
@@ -695,13 +696,14 @@ class Image2Seg:
         updated_image_path = get_new_image_name(
             inputs, func_name="segmentation")
         segmentation.save(updated_image_path)
-        print("\nProcessed Image2Pose, Input Image: {}, Output Pose: {}").format(inputs, updated_image_path)
+        print("\nProcessed Image2Pose, Input Image: {}, Output Pose: {}").format(
+            inputs, updated_image_path)
         return updated_image_path
 
 
 class SegText2Image:
     def __init__(self, device):
-        print(f"Initializing SegText2Image to {device}")
+        print("Initializing SegText2Image to {}").format(device)
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-seg",
                                                           torch_dtype=self.torch_dtype)
@@ -728,14 +730,14 @@ class SegText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = f'{instruct_text}, {self.a_prompt}'
+        prompt = "{}, {}".format(instruct_text, self.a_prompt)
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(
             image_path, func_name="segment2image")
         image.save(updated_image_path)
-        print(f"\nProcessed SegText2Image, Input Seg: {image_path}, Input Text: {instruct_text}, "
-              f"Output Image: {updated_image_path}")
+        print("\nProcessed SegText2Image, Input Seg: {}, Input Text: {}, Output Image: {}").format(
+            image_path, instruct_text, updated_image_path)
         return updated_image_path
 
 
@@ -757,14 +759,14 @@ class Image2Depth:
         depth = Image.fromarray(depth)
         updated_image_path = get_new_image_name(inputs, func_name="depth")
         depth.save(updated_image_path)
-        print(
-            f"\nProcessed Image2Depth, Input Image: {inputs}, Output Depth: {updated_image_path}")
+        print("\nProcessed Image2Depth, Input Image: {}, Output Depth: {}").format(
+            inputs, updated_image_path)
         return updated_image_path
 
 
 class DepthText2Image:
     def __init__(self, device):
-        print(f"Initializing DepthText2Image to {device}")
+        print("Initializing DepthText2Image to {}").format(device)
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(
             "fusing/stable-diffusion-v1-5-controlnet-depth", torch_dtype=self.torch_dtype)
@@ -791,14 +793,14 @@ class DepthText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = f'{instruct_text}, {self.a_prompt}'
+        prompt = "{}, {}".format(instruct_text, self.a_prompt)
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(
             image_path, func_name="depth2image")
         image.save(updated_image_path)
-        print(f"\nProcessed DepthText2Image, Input Depth: {image_path}, Input Text: {instruct_text}, "
-              f"Output Image: {updated_image_path}")
+        print("\nProcessed DepthText2Image, Input Depth: {}, Input Text: {}, Output Image: {}").format(
+            image, instruct_text, updated_image_path)
         return updated_image_path
 
 
@@ -833,14 +835,14 @@ class Image2Normal:
         image = image.resize(original_size)
         updated_image_path = get_new_image_name(inputs, func_name="normal-map")
         image.save(updated_image_path)
-        print(
-            f"\nProcessed Image2Normal, Input Image: {inputs}, Output Depth: {updated_image_path}")
+        print("\nProcessed Image2Normal, Input Image: {}, Output Depth: {}").format(
+            inputs, updated_image_path)
         return updated_image_path
 
 
 class NormalText2Image:
     def __init__(self, device):
-        print(f"Initializing NormalText2Image to {device}")
+        print("Initializing NormalText2Image to {}").format(device)
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(
             "fusing/stable-diffusion-v1-5-controlnet-normal", torch_dtype=self.torch_dtype)
@@ -867,20 +869,20 @@ class NormalText2Image:
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
         seed_everything(self.seed)
-        prompt = f'{instruct_text}, {self.a_prompt}'
+        prompt = "{}, {}".format(instruct_text, self.a_prompt)
         image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0, negative_prompt=self.n_prompt,
                           guidance_scale=9.0).images[0]
         updated_image_path = get_new_image_name(
             image_path, func_name="normal2image")
         image.save(updated_image_path)
-        print(f"\nProcessed NormalText2Image, Input Normal: {image_path}, Input Text: {instruct_text}, "
-              f"Output Image: {updated_image_path}")
+        print("\nProcessed NormalText2Image, Input Normal: {}, Input Text: {},Output Image: {}").format(
+            image_path, instruct_text, updated_image_path)
         return updated_image_path
 
 
 class VisualQuestionAnswering:
     def __init__(self, device):
-        print(f"Initializing VisualQuestionAnswering to {device}")
+        print("Initializing VisualQuestionAnswering to {}").format(device)
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.device = device
         self.processor = BlipProcessor.from_pretrained(
@@ -900,15 +902,15 @@ class VisualQuestionAnswering:
             self.device, self.torch_dtype)
         out = self.model.generate(**inputs)
         answer = self.processor.decode(out[0], skip_special_tokens=True)
-        print(f"\nProcessed VisualQuestionAnswering, Input Image: {image_path}, Input Question: {question}, "
-              f"Output Answer: {answer}")
+        print("\nProcessed VisualQuestionAnswering, Input Image: {}, Input Question: {}, Output Answer: {}").format(
+            image_path, question, answer)
         return answer
 
 
 class ConversationBot:
     def __init__(self, load_dict):
         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
-        print(f"Initializing VisualChatGPT, load_dict={load_dict}")
+        print("Initializing VisualChatGPT, load_dict={}").format(load_dict)
         if 'ImageCaptioning' not in load_dict:
             raise ValueError(
                 "You have to load ImageCaptioning as a basic function for VisualChatGPT")
@@ -945,14 +947,15 @@ class ConversationBot:
         res = self.agent({"input": text})
         res['output'] = res['output'].replace("\\", "/")
         response = re.sub(
-            '(image/\S*png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
+            '(image/\S*png)', lambda m: '![](/file={})*{}*'.format(m.group(0), m.group(0)), res['output'])
         state = state + [(text, response)]
-        print(f"\nProcessed run_text, Input text: {text}\nCurrent state: {state}\n"
-              f"Current Memory: {self.agent.memory.buffer}")
+        print("\nProcessed run_text, Input text: {}\nCurrent state: {}\nCurrent Memory: {}".format(
+            text, state, self.agent.memory.buffer))
         return state, state
 
     def run_image(self, image, state, txt):
-        image_filename = os.path.join('image', f"{str(uuid.uuid4())[:8]}.png")
+        image_filename = os.path.join(
+            'image', '{}.png'.format(str(uuid.uuid4())[:8]))
         print("======>Auto Resize Image...")
         img = Image.open(image.name)
         width, height = img.size
@@ -963,18 +966,19 @@ class ConversationBot:
         img = img.resize((width_new, height_new))
         img = img.convert('RGB')
         img.save(image_filename, "PNG")
-        print(
-            f"Resize image form {width}x{height} to {width_new}x{height_new}")
+        print("Resize image form {}x{} to {}x{}".format(
+            width, height, width_new, height_new))
         description = self.models['ImageCaptioning'].inference(image_filename)
-        Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
+        Human_prompt = "\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \'Received\'. \n".format(
+            image_filename, description)
         AI_prompt = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + \
             Human_prompt + 'AI: ' + AI_prompt
         state = state + \
-            [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
-        print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
-              f"Current Memory: {self.agent.memory.buffer}")
-        return state, state, f'{txt} {image_filename} '
+            [("![](/file={})*{}*".format(image_filename, image_filename), AI_prompt)]
+        print("\nProcessed run_image, Input image: {}\n Current state: {}\n Current Memory: {}".format(
+            image_filename, state, self.agent.memory.buffer))
+        return state, state, "{} {}".format(txt, image_filename)
 
 
 if __name__ == '__main__':
