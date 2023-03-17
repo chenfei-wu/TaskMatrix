@@ -55,6 +55,9 @@ conda activate visgpt
 #  prepare the basic environments
 pip install -r requirements.txt
 
+# update torch to version 2.0 with latest CUDA
+pip3 install torch torchvision torchaudio torchtext --index-url https://download.pytorch.org/whl/cu118
+
 # prepare your private OpenAI key (for Linux)
 export OPENAI_API_KEY={Your_Private_Openai_Key}
 
