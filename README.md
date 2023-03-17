@@ -14,6 +14,7 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 
 ## Updates:
 
+- Add DirectML support
 - Add custom GPU/CPU assignment
 - Add windows support
 - Merge HuggingFace ControlNet, Remove download.sh
@@ -83,7 +84,10 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
     Image2Seg_cpu,SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
     Image2Hed_cpu,HedText2Image_cuda:3,Image2Normal_cpu,
     NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
-                             
+
+# Advice for DirectML backend (with any GPU supporting DX12, like AMD Radeon RX 6700XT)                      
+python visual_chatgpt.py --load "ImageCaptioning_dml,Text2Image_dml"
+
 ```
 
 ## GPU memory usage
