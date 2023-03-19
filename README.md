@@ -55,8 +55,8 @@ conda activate visgpt
 #  prepare the basic environments
 pip install -r requirements.txt
 
-# prepare your private OpenAI key (for Linux)
-export OPENAI_API_KEY={Your_Private_Openai_Key}
+# prepare your private OpenAI key (for Linux and macOS)
+export OPENAI_API_KEY={Your_Private_Openai_Key} # do not include {}
 
 # prepare your private OpenAI key (for Windows)
 set OPENAI_API_KEY={Your_Private_Openai_Key}
