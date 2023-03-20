@@ -617,7 +617,7 @@ class Image2Seg:
         segmentation = Image.fromarray(color_seg)
         updated_image_path = get_new_image_name(inputs, func_name="segmentation")
         segmentation.save(updated_image_path)
-        print(f"\nProcessed Image2Pose, Input Image: {inputs}, Output Pose: {updated_image_path}")
+        print(f"\nProcessed Image2Seg, Input Image: {inputs}, Output Pose: {updated_image_path}")
         return updated_image_path
 
 
