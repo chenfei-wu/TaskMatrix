@@ -85,6 +85,10 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
     NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
                              
 ```
+## Contributing
+
+### Contribution guidelines
+Visual ChatGPT is the work of different contributors.To contribute to teh project, please read through the contributors guidelines.[Contribution guidelines].[contribution] where you can learn more.
 
 ## GPU memory usage
 Here we list the GPU memory usage of each visual foundation model, you can specify which one you like:
