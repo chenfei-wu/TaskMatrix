@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
 import gradio as gr
 import random
 import torch
 import cv2
 import re
+from typing import Optional
 import uuid
 from PIL import Image
 import numpy as np
@@ -67,7 +69,7 @@ Since Visual ChatGPT is a text language model, Visual ChatGPT must use tools to 
 The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGPT should remember to repeat important information in the final response for Human. 
 Thought: Do I need to use a tool? {agent_scratchpad}"""
 
-os.makedirs('image', exist_ok=True)
+Path("image").mkdir(parents=True, exist_ok=True)
 
 
 def seed_everything(seed):
@@ -87,7 +89,7 @@ def prompts(name, description):
     return decorator
 
 
-def cut_dialogue_history(history_memory, keep_last_n_words=500):
+def cut_dialogue_history(history_memory: str, keep_last_n_words: int = 500) -> Optional[str]:
     if history_memory is None or len(history_memory) == 0:
         return history_memory
     tokens = history_memory.split()
@@ -103,10 +105,10 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
     return '\n' + '\n'.join(paragraphs)
 
 
-def get_new_image_name(org_img_name, func_name="update"):
-    head_tail = os.path.split(org_img_name)
-    head = head_tail[0]
-    tail = head_tail[1]
+def get_new_image_name(org_img_name: str, func_name: str = "update") -> str:
+    head_tail = Path(org_img_name)
+    head = head_tail.parent
+    tail = head_tail.name
     name_split = tail.split('.')[0].split('_')
     this_new_uuid = str(uuid.uuid4())[:4]
     if len(name_split) == 1:
@@ -116,17 +118,17 @@ def get_new_image_name(org_img_name, func_name="update"):
         most_org_file_name = name_split[3]
     recent_prev_file_name = name_split[0]
     new_file_name = f'{this_new_uuid}_{func_name}_{recent_prev_file_name}_{most_org_file_name}.png'
-    return os.path.join(head, new_file_name)
+    return str(Path(head) / new_file_name)
 
 
 class MaskFormer:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing MaskFormer to {device}")
         self.device = device
         self.processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
         self.model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 
-    def inference(self, image_path, text):
+    def inference(self, image_path: str, text: str) -> Image.Image:
         threshold = 0.5
         min_area = 0.02
         padding = 20
@@ -150,7 +152,7 @@ class MaskFormer:
 
 
 class ImageEditing:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing ImageEditing to {device}")
         self.device = device
         self.mask_former = MaskFormer(device=self.device)
@@ -164,7 +166,7 @@ class ImageEditing:
                          "from its description or location. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the object need to be removed. ")
-    def inference_remove(self, inputs):
+    def inference_remove(self, inputs: str) -> str:
         image_path, to_be_removed_txt = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         return self.inference_replace(f"{image_path},{to_be_removed_txt},background")
 
@@ -173,7 +175,7 @@ class ImageEditing:
                          "location with another object from its description. "
                          "The input to this tool should be a comma separated string of three, "
                          "representing the image_path, the object to be replaced, the object to be replaced with ")
-    def inference_replace(self, inputs):
+    def inference_replace(self, inputs: str) -> str:
         image_path, to_be_replaced_txt, replace_with_txt = inputs.split(",")
         original_image = Image.open(image_path)
         original_size = original_image.size
@@ -190,7 +192,7 @@ class ImageEditing:
 
 
 class InstructPix2Pix:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing InstructPix2Pix to {device}")
         self.device = device
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
@@ -204,7 +206,7 @@ class InstructPix2Pix:
                          "like: make it look like a painting. or make it like a robot. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the text. ")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         """Change style of image."""
         print("===>Starting InstructPix2Pix Inference")
         image_path, text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
@@ -218,7 +220,7 @@ class InstructPix2Pix:
 
 
 class Text2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing Text2Image to {device}")
         self.device = device
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
@@ -233,18 +235,18 @@ class Text2Image:
              description="useful when you want to generate an image from a user input text and save it to a file. "
                          "like: generate an image of an object or something, or generate an image that includes some objects. "
                          "The input to this tool should be a string, representing the text used to generate image. ")
-    def inference(self, text):
-        image_filename = os.path.join('image', f"{str(uuid.uuid4())[:8]}.png")
+    def inference(self, text: str) -> str:
+        image_filename = Path("image") / f"{str(uuid.uuid4())[:8]}.png"
         prompt = text + ', ' + self.a_prompt
         image = self.pipe(prompt, negative_prompt=self.n_prompt).images[0]
         image.save(image_filename)
         print(
             f"\nProcessed Text2Image, Input Text: {text}, Output Image: {image_filename}")
-        return image_filename
+        return str(image_filename)
 
 
 class ImageCaptioning:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing ImageCaptioning to {device}")
         self.device = device
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
@@ -255,7 +257,7 @@ class ImageCaptioning:
     @prompts(name="Get Photo Description",
              description="useful when you want to know what is inside the photo. receives image_path as input. "
                          "The input to this tool should be a string, representing the image_path. ")
-    def inference(self, image_path):
+    def inference(self, image_path: str) -> str:
         inputs = self.processor(Image.open(image_path), return_tensors="pt").to(self.device, self.torch_dtype)
         out = self.model.generate(**inputs)
         captions = self.processor.decode(out[0], skip_special_tokens=True)
@@ -264,7 +266,7 @@ class ImageCaptioning:
 
 
 class Image2Canny:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Canny")
         self.low_threshold = 100
         self.high_threshold = 200
@@ -274,7 +276,7 @@ class Image2Canny:
                          "like: detect the edges of this image, or canny detection on image, "
                          "or perform edge detection on this image, or detect the canny image of this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         image = np.array(image)
         canny = cv2.Canny(image, self.low_threshold, self.high_threshold)
@@ -288,7 +290,7 @@ class Image2Canny:
 
 
 class CannyText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing CannyText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-canny",
@@ -309,7 +311,7 @@ class CannyText2Image:
                          " or generate a new real image of a object or something from this edge image. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description. ")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -325,7 +327,7 @@ class CannyText2Image:
 
 
 class Image2Line:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Line")
         self.detector = MLSDdetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -334,7 +336,7 @@ class Image2Line:
                          "like: detect the straight lines of this image, or straight line detection on image, "
                          "or perform straight line detection on this image, or detect the straight line image of this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         mlsd = self.detector(image)
         updated_image_path = get_new_image_name(inputs, func_name="line-of")
@@ -344,7 +346,7 @@ class Image2Line:
 
 
 class LineText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing LineText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-mlsd",
@@ -367,7 +369,7 @@ class LineText2Image:
                          "or generate a new real image of a object or something from this straight lines. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description. ")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -383,7 +385,7 @@ class LineText2Image:
 
 
 class Image2Hed:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Hed")
         self.detector = HEDdetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -392,7 +394,7 @@ class Image2Hed:
                          "like: detect the soft hed boundary of this image, or hed boundary detection on image, "
                          "or perform hed boundary detection on this image, or detect soft hed boundary image of this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         hed = self.detector(image)
         updated_image_path = get_new_image_name(inputs, func_name="hed-boundary")
@@ -402,7 +404,7 @@ class Image2Hed:
 
 
 class HedText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing HedText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-hed",
@@ -425,7 +427,7 @@ class HedText2Image:
                          "or generate a new real image of a object or something from this hed boundary. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -441,7 +443,7 @@ class HedText2Image:
 
 
 class Image2Scribble:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Scribble")
         self.detector = HEDdetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -450,7 +452,7 @@ class Image2Scribble:
                          "like: generate a scribble of this image, or generate a sketch from this image, "
                          "detect the sketch from this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         scribble = self.detector(image, scribble=True)
         updated_image_path = get_new_image_name(inputs, func_name="scribble")
@@ -460,7 +462,7 @@ class Image2Scribble:
 
 
 class ScribbleText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing ScribbleText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-scribble",
@@ -481,7 +483,7 @@ class ScribbleText2Image:
                          "a scribble image or a sketch image. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -497,7 +499,7 @@ class ScribbleText2Image:
 
 
 class Image2Pose:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Pose")
         self.detector = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -505,7 +507,7 @@ class Image2Pose:
              description="useful when you want to detect the human pose of the image. "
                          "like: generate human poses of this image, or generate a pose image from this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         pose = self.detector(image)
         updated_image_path = get_new_image_name(inputs, func_name="human-pose")
@@ -515,7 +517,7 @@ class Image2Pose:
 
 
 class PoseText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing PoseText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-openpose",
@@ -539,7 +541,7 @@ class PoseText2Image:
                          "or generate a new real image of a human from this pose. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -555,7 +557,7 @@ class PoseText2Image:
 
 
 class Image2Seg:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Seg")
         self.image_processor = AutoImageProcessor.from_pretrained("openmmlab/upernet-convnext-small")
         self.image_segmentor = UperNetForSemanticSegmentation.from_pretrained("openmmlab/upernet-convnext-small")
@@ -603,7 +605,7 @@ class Image2Seg:
                          "like: segment this image, or generate segmentations on this image, "
                          "or perform segmentation on this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         pixel_values = self.image_processor(image, return_tensors="pt").pixel_values
         with torch.no_grad():
@@ -622,7 +624,7 @@ class Image2Seg:
 
 
 class SegText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing SegText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained("fusing/stable-diffusion-v1-5-controlnet-seg",
@@ -643,7 +645,7 @@ class SegText2Image:
                          "or generate a new real image of a object or something from these segmentations. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -659,7 +661,7 @@ class SegText2Image:
 
 
 class Image2Depth:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Depth")
         self.depth_estimator = pipeline('depth-estimation')
 
@@ -667,7 +669,7 @@ class Image2Depth:
              description="useful when you want to detect depth of the image. like: generate the depth from this image, "
                          "or detect the depth map on this image, or predict the depth for this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         depth = self.depth_estimator(image)['depth']
         depth = np.array(depth)
@@ -681,7 +683,7 @@ class Image2Depth:
 
 
 class DepthText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing DepthText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(
@@ -702,7 +704,7 @@ class DepthText2Image:
                          "or generate a new real image of a object or something from the depth map. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -718,7 +720,7 @@ class DepthText2Image:
 
 
 class Image2Normal:
-    def __init__(self, device):
+    def __init__(self) -> None:
         print("Initializing Image2Normal")
         self.depth_estimator = pipeline("depth-estimation", model="Intel/dpt-hybrid-midas")
         self.bg_threhold = 0.4
@@ -727,7 +729,7 @@ class Image2Normal:
              description="useful when you want to detect norm map of the image. "
                          "like: generate normal map from this image, or predict normal map of this image. "
                          "The input to this tool should be a string, representing the image_path")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image = Image.open(inputs)
         original_size = image.size
         image = self.depth_estimator(image)['predicted_depth'][0]
@@ -752,7 +754,7 @@ class Image2Normal:
 
 
 class NormalText2Image:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing NormalText2Image to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(
@@ -773,7 +775,7 @@ class NormalText2Image:
                          "or generate a new real image of a object or something from the normal map. "
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -789,7 +791,7 @@ class NormalText2Image:
 
 
 class VisualQuestionAnswering:
-    def __init__(self, device):
+    def __init__(self, device: str) -> None:
         print(f"Initializing VisualQuestionAnswering to {device}")
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.device = device
@@ -801,7 +803,7 @@ class VisualQuestionAnswering:
              description="useful when you need an answer for a question based on an image. "
                          "like: what is the background color of the last image, how many cats in this figure, what is in this figure. "
                          "The input to this tool should be a comma separated string of two, representing the image_path and the question")
-    def inference(self, inputs):
+    def inference(self, inputs: str) -> str:
         image_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         raw_image = Image.open(image_path).convert('RGB')
         inputs = self.processor(raw_image, question, return_tensors="pt").to(self.device, self.torch_dtype)
@@ -813,7 +815,7 @@ class VisualQuestionAnswering:
 
 
 class ConversationBot:
-    def __init__(self, load_dict):
+    def __init__(self, load_dict: dict) -> None:
         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
         print(f"Initializing VisualChatGPT, load_dict={load_dict}")
         if 'ImageCaptioning' not in load_dict:
@@ -843,7 +845,7 @@ class ConversationBot:
             agent_kwargs={'prefix': VISUAL_CHATGPT_PREFIX, 'format_instructions': VISUAL_CHATGPT_FORMAT_INSTRUCTIONS,
                           'suffix': VISUAL_CHATGPT_SUFFIX}, )
 
-    def run_text(self, text, state):
+    def run_text(self, text: str, state: list) -> tuple:
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
         res = self.agent({"input": text})
         res['output'] = res['output'].replace("\\", "/")
@@ -853,9 +855,10 @@ class ConversationBot:
               f"Current Memory: {self.agent.memory.buffer}")
         return state, state
 
-    def run_image(self, image, state, txt):
-        image_filename = os.path.join('image', f"{str(uuid.uuid4())[:8]}.png")
+    def run_image(self, image, state: list, txt: str) -> tuple:
+        image_filename = Path("image") / f"{str(uuid.uuid4())[:8]}.png"
         print("======>Auto Resize Image...")
+        print(type(image))
         img = Image.open(image.name)
         width, height = img.size
         ratio = min(512 / width, 512 / height)
