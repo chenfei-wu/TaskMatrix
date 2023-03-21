@@ -266,7 +266,7 @@ class ImageCaptioning:
 
 
 class Image2Canny:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Canny")
         self.low_threshold = 100
         self.high_threshold = 200
@@ -327,7 +327,7 @@ class CannyText2Image:
 
 
 class Image2Line:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Line")
         self.detector = MLSDdetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -385,7 +385,7 @@ class LineText2Image:
 
 
 class Image2Hed:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Hed")
         self.detector = HEDdetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -443,7 +443,7 @@ class HedText2Image:
 
 
 class Image2Scribble:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Scribble")
         self.detector = HEDdetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -499,7 +499,7 @@ class ScribbleText2Image:
 
 
 class Image2Pose:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Pose")
         self.detector = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
 
@@ -557,7 +557,7 @@ class PoseText2Image:
 
 
 class Image2Seg:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Seg")
         self.image_processor = AutoImageProcessor.from_pretrained("openmmlab/upernet-convnext-small")
         self.image_segmentor = UperNetForSemanticSegmentation.from_pretrained("openmmlab/upernet-convnext-small")
@@ -661,7 +661,7 @@ class SegText2Image:
 
 
 class Image2Depth:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Depth")
         self.depth_estimator = pipeline('depth-estimation')
 
@@ -720,7 +720,7 @@ class DepthText2Image:
 
 
 class Image2Normal:
-    def __init__(self) -> None:
+    def __init__(self, device: str) -> None:
         print("Initializing Image2Normal")
         self.depth_estimator = pipeline("depth-estimation", model="Intel/dpt-hybrid-midas")
         self.bg_threhold = 0.4
