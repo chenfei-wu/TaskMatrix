@@ -90,6 +90,11 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
                              
 ```
 
+If you use Visual Studio Code to run the command lines above, make sure the Python interpreter points to Python 3.8.13 as shown in the screenshot below to avoid incompatibility issues among dependencies and modules.
+
+<img src="./assets/python_interpreter_path.png" width="750">
+
+
 ## GPU memory usage
 Here we list the GPU memory usage of each visual foundation model, you can specify which one you like:
 
