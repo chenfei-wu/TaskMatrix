@@ -21,6 +21,7 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 - Thanks to **@ShengmingYin** and **@thebestannie** for providing a template example in `InfinityOutPainting` class (see the following gif)
     - Firstly, run `python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:1,VisualQuestionAnswering_cuda:2"`
     - Secondly, say `extend the image to 2048x1024` to Visual ChatGPT!
+    - By simply creating an `InfinityOutPainting` template, Visual ChatGPT can seamlessly extend images to any size through collaboration with existing `ImageCaptioning`, `ImageEditing`, and `VisualQuestionAnswering` foundation models, **without the need for additional training**.
 - **Visual ChatGPT needs the effort of the community! We crave your contribution to add new and interesting features!**
 <img src="./assets/demo_inf.gif" width="750">
 
