@@ -13,17 +13,17 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 </a>
 
 ## Updates:
-
-- Add custom GPU/CPU assignment
-- Add windows support
-- Merge HuggingFace ControlNet, Remove download.sh
-- Add Prompt Decorator
-- Add HuggingFace and Colab Demo
-- Clean Requirements
+- We propose the **template** idea in Visual ChatGPT!
+    - A template is a **pre-defined execution flow** that assists ChatGPT in assembling complex tasks involving multiple foundation models. 
+    - A template contains the **experiential solution** to complex tasks as determined by humans. 
+    - A template can **invoke multiple foundation models** or even **establish a new ChatGPT session**
+    - To define a **template**, simply adding a class with attributes `template_model = True`
+    - Thanks to **@ShengmingYin** and **@thebestannie** for providing a template example in `InfinityOutPainting` class (see the following gif)
+<img src="./assets/demo_inf.gif" width="750">
 
 
 ## Insight & Goal:
-One the one hand, **ChatGPT (or LLMs)** serves as a **general interface** that provides a broad and diverse understanding of a
+On the one hand, **ChatGPT (or LLMs)** serves as a **general interface** that provides a broad and diverse understanding of a
 wide range of topics. On the other hand, **Foundation Models** serve as **domain experts** by providing deep knowledge in specific domains.
 By leveraging **both general and deep knowledge**, we aim at building an AI that is capable of handling various tasks.
 
