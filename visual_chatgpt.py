@@ -88,14 +88,6 @@ def prompts(name, description):
 
     return decorator
 
-def template_prompts(subtools, name, description):
-    def decorator(func):
-        func.subtools = subtools
-        func.name = name
-        func.description = description
-        return func
-
-    return decorator
 
 def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
     new_size = new_image.size
