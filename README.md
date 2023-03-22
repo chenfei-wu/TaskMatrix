@@ -47,7 +47,7 @@ git clone https://github.com/microsoft/visual-chatgpt.git
 cd visual-chatgpt
 
 # create a new environment
-conda create -n visgpt python=3.8
+conda create -n visgpt python=3.9
 
 # activate the new environment
 conda activate visgpt
