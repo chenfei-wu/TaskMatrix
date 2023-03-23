@@ -92,7 +92,7 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
     NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
     
 # Advice for NVIDIA 3090 24 GB
-python visual_chatgpt.py --load  "ImageCaptioning_cpu,ImageEditing_cuda:0,Text2Image_cuda:0,Image2Canny_cpu,CannyText2Image_cuda:0,Image2Depth_cpu,DepthText2Image_cpu,VisualQuestionAnswering_cuda:0,InstructPix2Pix_cuda:0,Image2Scribble_cpu,ScribbleText2Image_cpu,Image2Seg_cpu,SegText2Image_cpu,Image2Pose_cpu,PoseText2Image_cpu,Image2Hed_cpu,HedText2Image_cpu,Image2Normal_cpu,NormalText2Image_cpu,Image2Line_cpu,LineText2Image_cpu"
+python visual_chatgpt.py --load  "ImageCaptioning_cuda:0,ImageEditing_cuda:0,Text2Image_cuda:0,Image2Canny_cpu,CannyText2Image_cuda:0,Image2Depth_cpu,DepthText2Image_cpu,VisualQuestionAnswering_cuda:0,InstructPix2Pix_cuda:0,Image2Scribble_cpu,ScribbleText2Image_cpu,Image2Seg_cpu,SegText2Image_cpu,Image2Pose_cpu,PoseText2Image_cpu,Image2Hed_cpu,HedText2Image_cpu,Image2Normal_cpu,NormalText2Image_cpu,Image2Line_cpu,LineText2Image_cpu"
                              
 ```
 
