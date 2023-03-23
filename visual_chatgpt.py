@@ -5,9 +5,11 @@ import torch
 import cv2
 import re
 import uuid
-from PIL import Image
+from PIL import Image, ImageDraw, ImageOps
+import math
 import numpy as np
 import argparse
+import inspect
 
 from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 from transformers import pipeline, BlipProcessor, BlipForConditionalGeneration, BlipForQuestionAnswering
@@ -87,6 +89,63 @@ def prompts(name, description):
     return decorator
 
 
+def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
+    new_size = new_image.size
+    old_size = old_image.size
+    easy_img = np.array(new_image)
+    gt_img_array = np.array(old_image)
+    pos_w = (new_size[0] - old_size[0]) // 2
+    pos_h = (new_size[1] - old_size[1]) // 2
+
+    kernel_h = cv2.getGaussianKernel(old_size[1], old_size[1] * sigma)
+    kernel_w = cv2.getGaussianKernel(old_size[0], old_size[0] * sigma)
+    kernel = np.multiply(kernel_h, np.transpose(kernel_w))
+
+    kernel[steps:-steps, steps:-steps] = 1
+    kernel[:steps, :steps] = kernel[:steps, :steps] / kernel[steps - 1, steps - 1]
+    kernel[:steps, -steps:] = kernel[:steps, -steps:] / kernel[steps - 1, -(steps)]
+    kernel[-steps:, :steps] = kernel[-steps:, :steps] / kernel[-steps, steps - 1]
+    kernel[-steps:, -steps:] = kernel[-steps:, -steps:] / kernel[-steps, -steps]
+    kernel = np.expand_dims(kernel, 2)
+    kernel = np.repeat(kernel, 3, 2)
+
+    weight = np.linspace(0, 1, steps)
+    top = np.expand_dims(weight, 1)
+    top = np.repeat(top, old_size[0] - 2 * steps, 1)
+    top = np.expand_dims(top, 2)
+    top = np.repeat(top, 3, 2)
+
+    weight = np.linspace(1, 0, steps)
+    down = np.expand_dims(weight, 1)
+    down = np.repeat(down, old_size[0] - 2 * steps, 1)
+    down = np.expand_dims(down, 2)
+    down = np.repeat(down, 3, 2)
+
+    weight = np.linspace(0, 1, steps)
+    left = np.expand_dims(weight, 0)
+    left = np.repeat(left, old_size[1] - 2 * steps, 0)
+    left = np.expand_dims(left, 2)
+    left = np.repeat(left, 3, 2)
+
+    weight = np.linspace(1, 0, steps)
+    right = np.expand_dims(weight, 0)
+    right = np.repeat(right, old_size[1] - 2 * steps, 0)
+    right = np.expand_dims(right, 2)
+    right = np.repeat(right, 3, 2)
+
+    kernel[:steps, steps:-steps] = top
+    kernel[-steps:, steps:-steps] = down
+    kernel[steps:-steps, :steps] = left
+    kernel[steps:-steps, -steps:] = right
+
+    pt_gt_img = easy_img[pos_h:pos_h + old_size[1], pos_w:pos_w + old_size[0]]
+    gaussian_gt_img = kernel * gt_img_array + (1 - kernel) * pt_gt_img  # gt img with blur img
+    gaussian_gt_img = gaussian_gt_img.astype(np.int64)
+    easy_img[pos_h:pos_h + old_size[1], pos_w:pos_w + old_size[0]] = gaussian_gt_img
+    gaussian_img = Image.fromarray(easy_img)
+    return gaussian_img
+
+
 def cut_dialogue_history(history_memory, keep_last_n_words=500):
     if history_memory is None or len(history_memory) == 0:
         return history_memory
@@ -117,6 +176,7 @@ def get_new_image_name(org_img_name, func_name="update"):
     recent_prev_file_name = name_split[0]
     new_file_name = f'{this_new_uuid}_{func_name}_{recent_prev_file_name}_{most_org_file_name}.png'
     return os.path.join(head, new_file_name)
+
 
 
 class MaskFormer:
@@ -617,7 +677,7 @@ class Image2Seg:
         segmentation = Image.fromarray(color_seg)
         updated_image_path = get_new_image_name(inputs, func_name="segmentation")
         segmentation.save(updated_image_path)
-        print(f"\nProcessed Image2Pose, Input Image: {inputs}, Output Pose: {updated_image_path}")
+        print(f"\nProcessed Image2Seg, Input Image: {inputs}, Output Pose: {updated_image_path}")
         return updated_image_path
 
 
@@ -812,6 +872,104 @@ class VisualQuestionAnswering:
         return answer
 
 
+class InfinityOutPainting:
+    template_model = True # Add this line to show this is a template model.
+    def __init__(self, ImageCaptioning, ImageEditing, VisualQuestionAnswering):
+        self.llm = OpenAI(temperature=0)
+        self.ImageCaption = ImageCaptioning
+        self.ImageEditing = ImageEditing
+        self.ImageVQA = VisualQuestionAnswering
+        self.a_prompt = 'best quality, extremely detailed'
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, ' \
+                        'fewer digits, cropped, worst quality, low quality'
+
+    def get_BLIP_vqa(self, image, question):
+        inputs = self.ImageVQA.processor(image, question, return_tensors="pt").to(self.ImageVQA.device,
+                                                                                  self.ImageVQA.torch_dtype)
+        out = self.ImageVQA.model.generate(**inputs)
+        answer = self.ImageVQA.processor.decode(out[0], skip_special_tokens=True)
+        print(f"\nProcessed VisualQuestionAnswering, Input Question: {question}, Output Answer: {answer}")
+        return answer
+
+    def get_BLIP_caption(self, image):
+        inputs = self.ImageCaption.processor(image, return_tensors="pt").to(self.ImageCaption.device,
+                                                                                self.ImageCaption.torch_dtype)
+        out = self.ImageCaption.model.generate(**inputs)
+        BLIP_caption = self.ImageCaption.processor.decode(out[0], skip_special_tokens=True)
+        return BLIP_caption
+
+    def check_prompt(self, prompt):
+        check = f"Here is a paragraph with adjectives. " \
+                f"{prompt} " \
+                f"Please change all plural forms in the adjectives to singular forms. "
+        return self.llm(check)
+
+    def get_imagine_caption(self, image, imagine):
+        BLIP_caption = self.get_BLIP_caption(image)
+        background_color = self.get_BLIP_vqa(image, 'what is the background color of this image')
+        style = self.get_BLIP_vqa(image, 'what is the style of this image')
+        imagine_prompt = f"let's pretend you are an excellent painter and now " \
+                         f"there is an incomplete painting with {BLIP_caption} in the center, " \
+                         f"please imagine the complete painting and describe it" \
+                         f"you should consider the background color is {background_color}, the style is {style}" \
+                         f"You should make the painting as vivid and realistic as possible" \
+                         f"You can not use words like painting or picture" \
+                         f"and you should use no more than 50 words to describe it"
+        caption = self.llm(imagine_prompt) if imagine else BLIP_caption
+        caption = self.check_prompt(caption)
+        print(f'BLIP observation: {BLIP_caption}, ChatGPT imagine to {caption}') if imagine else print(
+            f'Prompt: {caption}')
+        return caption
+
+    def resize_image(self, image, max_size=1000000, multiple=8):
+        aspect_ratio = image.size[0] / image.size[1]
+        new_width = int(math.sqrt(max_size * aspect_ratio))
+        new_height = int(new_width / aspect_ratio)
+        new_width, new_height = new_width - (new_width % multiple), new_height - (new_height % multiple)
+        return image.resize((new_width, new_height))
+
+    def dowhile(self, original_img, tosize, expand_ratio, imagine, usr_prompt):
+        old_img = original_img
+        while (old_img.size != tosize):
+            prompt = self.check_prompt(usr_prompt) if usr_prompt else self.get_imagine_caption(old_img, imagine)
+            crop_w = 15 if old_img.size[0] != tosize[0] else 0
+            crop_h = 15 if old_img.size[1] != tosize[1] else 0
+            old_img = ImageOps.crop(old_img, (crop_w, crop_h, crop_w, crop_h))
+            temp_canvas_size = (expand_ratio * old_img.width if expand_ratio * old_img.width < tosize[0] else tosize[0],
+                                expand_ratio * old_img.height if expand_ratio * old_img.height < tosize[1] else tosize[
+                                    1])
+            temp_canvas, temp_mask = Image.new("RGB", temp_canvas_size, color="white"), Image.new("L", temp_canvas_size,
+                                                                                                  color="white")
+            x, y = (temp_canvas.width - old_img.width) // 2, (temp_canvas.height - old_img.height) // 2
+            temp_canvas.paste(old_img, (x, y))
+            temp_mask.paste(0, (x, y, x + old_img.width, y + old_img.height))
+            resized_temp_canvas, resized_temp_mask = self.resize_image(temp_canvas), self.resize_image(temp_mask)
+            image = self.ImageEditing.inpaint(prompt=prompt, image=resized_temp_canvas, mask_image=resized_temp_mask,
+                                              height=resized_temp_canvas.height, width=resized_temp_canvas.width,
+                                              num_inference_steps=50).images[0].resize(
+                (temp_canvas.width, temp_canvas.height), Image.ANTIALIAS)
+            image = blend_gt2pt(old_img, image)
+            old_img = image
+        return old_img
+
+    @prompts(name="Extend An Image",
+             description="useful when you need to extend an image into a larger image."
+                         "like: extend the image into a resolution of 2048x1024, extend the image into 2048x1024. "
+                         "The input to this tool should be a comma separated string of two, representing the image_path and the resolution of widthxheight")
+    def inference(self, inputs):
+        image_path, resolution = inputs.split(',')
+        width, height = resolution.split('x')
+        tosize = (int(width), int(height))
+        image = Image.open(image_path)
+        image = ImageOps.crop(image, (10, 10, 10, 10))
+        out_painted_image = self.dowhile(image, tosize, 4, True, False)
+        updated_image_path = get_new_image_name(image_path, func_name="outpainting")
+        out_painted_image.save(updated_image_path)
+        print(f"\nProcessed InfinityOutPainting, Input Image: {image_path}, Input Resolution: {resolution}, "
+              f"Output Image: {updated_image_path}")
+        return updated_image_path
+
+
 class ConversationBot:
     def __init__(self, load_dict):
         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
@@ -823,16 +981,24 @@ class ConversationBot:
         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 
         self.models = {}
+        # Load Basic Foundation Models
         for class_name, device in load_dict.items():
             self.models[class_name] = globals()[class_name](device=device)
 
+        # Load Template Foundation Models
+        for class_name, module in globals().items():
+            if getattr(module, 'template_model', False):
+                template_required_names = {k for k in inspect.signature(module.__init__).parameters.keys() if k!='self'}
+                loaded_names = set([type(e).__name__ for e in self.models.values()])
+                if template_required_names.issubset(loaded_names):
+                    self.models[class_name] = globals()[class_name](
+                        **{name: self.models[name] for name in template_required_names})
         self.tools = []
         for instance in self.models.values():
             for e in dir(instance):
                 if e.startswith('inference'):
                     func = getattr(instance, e)
                     self.tools.append(Tool(name=func.name, description=func.description, func=func))
-
         self.agent = initialize_agent(
             self.tools,
             self.llm,
@@ -900,4 +1066,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-        demo.launch(server_name="0.0.0.0", server_port=7868)
+        demo.launch(server_name="0.0.0.0", server_port=1015)
