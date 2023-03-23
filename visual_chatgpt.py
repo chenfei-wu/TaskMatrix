@@ -70,7 +70,7 @@ The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGP
 Thought: Do I need to use a tool? {agent_scratchpad}"""
 
 os.makedirs('image', exist_ok=True)
-
+server_port = int(os.getenv('SERVER_PORT', "1015"))
 
 def seed_everything(seed):
     random.seed(seed)
@@ -1066,4 +1066,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-        demo.launch(server_name="0.0.0.0", server_port=1015)
+        demo.launch(server_name="0.0.0.0", server_port=server_port)
