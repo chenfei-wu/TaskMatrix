@@ -975,7 +975,7 @@ class ConversationBot:
         if 'ImageCaptioning' not in load_dict:
             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
 
-        self.llm = OpenAI(openai_api_key="openai_api_key", temperature=0)
+        self.llm = OpenAI(openai_api_key="openai_api_key", temperature=0) # Manually replace openai_api_key by your OpenAI API key
         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 
         self.models = {}
