@@ -76,6 +76,9 @@ set OPENAI_API_KEY={Your_Private_Openai_Key}
 # Advice for CPU Users
 python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
 
+# If you see Permission Error in this step on Mac or Linux, use sudo: 
+sudo python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
+
 # Advice for 1 Tesla T4 15GB  (Google Colab)                       
 python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
                                 
