@@ -1013,7 +1013,7 @@ class ConversationBot:
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
         res = self.agent({"input": text})
         res['output'] = res['output'].replace("\\", "/")
-        response = re.sub('(image/\S*png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
+        response = re.sub('(image/\S*png)', lambda m: f'![](file={m.group(0)})*{m.group(0)}*', res['output'])
         state = state + [(text, response)]
         print(f"\nProcessed run_text, Input text: {text}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
@@ -1036,7 +1036,7 @@ class ConversationBot:
         Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
         AI_prompt = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
-        state = state + [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
+        state = state + [(f"![](file={image_filename})*{image_filename}*", AI_prompt)]
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
         return state, state, f'{txt} {image_filename} '
