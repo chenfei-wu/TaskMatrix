@@ -1070,4 +1070,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-        demo.launch(server_name=os.getenv("HOST_NAME"), server_port=os.getenv("HOST_PORT"))
+        demo.launch(server_name=os.getenv("HOST_NAME"), server_port=int(os.getenv("HOST_PORT")))
