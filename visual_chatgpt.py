@@ -27,7 +27,6 @@ from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 
-
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
 Visual ChatGPT is able to process and understand large amounts of text and images. As a language model, Visual ChatGPT can not directly read images, but it has a list of tools to finish different visual tasks. Each image will have a file name formed as "image/xxx.png", and Visual ChatGPT can invoke different tools to indirectly understand pictures. When talking about images, Visual ChatGPT is very strict to the file name and will never fabricate nonexistent files. When using tools to generate new image files, Visual ChatGPT is also known that the image may not be the same as the user's demand, and will use other visual question answering tools or description tools to observe the real image. Visual ChatGPT is able to use tools in a sequence, and is loyal to the tool observation outputs rather than faking the image content and image file name. It will remember to provide the file name from the last tool observation, if a new image is generated.
@@ -60,7 +59,8 @@ Thought: Do I need to use a tool? No
 """
 
 VISUAL_CHATGPT_SUFFIX = """You are very strict to the filename correctness and will never fake a file name if it does not exist.
-You will remember to provide the image file name loyally if it's provided in the last tool observation.
+You will remember to provide the image file name loyally if it's provided in the last tool observation. 
+When using tools, for all the input except the filename (e.g. object, text, user description, and question), you can only describe them in English even if the Human may ask you in other languages (like Chinese). 
 
 Begin!
 
@@ -226,7 +226,7 @@ class ImageEditing:
              description="useful when you want to remove and object or something from the photo "
                          "from its description or location. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the object need to be removed. ")
+                         "representing the image_path and the object (in English) need to be removed. ")
     def inference_remove(self, inputs):
         image_path, to_be_removed_txt = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         return self.inference_replace(f"{image_path},{to_be_removed_txt},background")
@@ -235,7 +235,7 @@ class ImageEditing:
              description="useful when you want to replace an object from the object description or "
                          "location with another object from its description. "
                          "The input to this tool should be a comma separated string of three, "
-                         "representing the image_path, the object to be replaced, the object to be replaced with ")
+                         "representing the image_path, the object to be replaced (in English), the object to be replaced with (in English) ")
     def inference_replace(self, inputs):
         image_path, to_be_replaced_txt, replace_with_txt = inputs.split(",")
         original_image = Image.open(image_path)
@@ -266,7 +266,7 @@ class InstructPix2Pix:
              description="useful when you want to the style of the image to be like the text. "
                          "like: make it look like a painting. or make it like a robot. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the text. ")
+                         "representing the image_path and the text (in English). ")
     def inference(self, inputs):
         """Change style of image."""
         print("===>Starting InstructPix2Pix Inference")
@@ -295,7 +295,7 @@ class Text2Image:
     @prompts(name="Generate Image From User Input Text",
              description="useful when you want to generate an image from a user input text and save it to a file. "
                          "like: generate an image of an object or something, or generate an image that includes some objects. "
-                         "The input to this tool should be a string, representing the text used to generate image. ")
+                         "The input to this tool should be a string, representing the text (in English) used to generate image. ")
     def inference(self, text):
         image_filename = os.path.join('image', f"{str(uuid.uuid4())[:8]}.png")
         prompt = text + ', ' + self.a_prompt
@@ -371,7 +371,7 @@ class CannyText2Image:
                          " like: generate a real image of a object or something from this canny image,"
                          " or generate a new real image of a object or something from this edge image. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description. ")
+                         "representing the image_path and the user description (in English). ")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -429,7 +429,7 @@ class LineText2Image:
                          "like: generate a real image of a object or something from this straight line image, "
                          "or generate a new real image of a object or something from this straight lines. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description. ")
+                         "representing the image_path and the user description (in English). ")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -487,7 +487,7 @@ class HedText2Image:
                          "like: generate a real image of a object or something from this soft hed boundary image, "
                          "or generate a new real image of a object or something from this hed boundary. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description")
+                         "representing the image_path and the user description (in English)")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -543,7 +543,7 @@ class ScribbleText2Image:
              description="useful when you want to generate a new real image from both the user description and "
                          "a scribble image or a sketch image. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description")
+                         "representing the image_path and the user description (in English)")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -601,7 +601,7 @@ class PoseText2Image:
                          "like: generate a real image of a human from this human pose image, "
                          "or generate a new real image of a human from this pose. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description")
+                         "representing the image_path and the user description (in English)")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -705,7 +705,7 @@ class SegText2Image:
                          "like: generate a real image of a object or something from this segmentation image, "
                          "or generate a new real image of a object or something from these segmentations. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description")
+                         "representing the image_path and the user description (in English)")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -764,7 +764,7 @@ class DepthText2Image:
                          "like: generate a real image of a object or something from this depth image, "
                          "or generate a new real image of a object or something from the depth map. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description")
+                         "representing the image_path and the user description (in English)")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -835,7 +835,7 @@ class NormalText2Image:
                          "like: generate a real image of a object or something from this normal map, "
                          "or generate a new real image of a object or something from the normal map. "
                          "The input to this tool should be a comma separated string of two, "
-                         "representing the image_path and the user description")
+                         "representing the image_path and the user description (in English)")
     def inference(self, inputs):
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
@@ -863,7 +863,7 @@ class VisualQuestionAnswering:
     @prompts(name="Answer Question About The Image",
              description="useful when you need an answer for a question based on an image. "
                          "like: what is the background color of the last image, how many cats in this figure, what is in this figure. "
-                         "The input to this tool should be a comma separated string of two, representing the image_path and the question")
+                         "The input to this tool should be a comma separated string of two, representing the image_path and the question (in English)")
     def inference(self, inputs):
         image_path, question = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         raw_image = Image.open(image_path).convert('RGB')
