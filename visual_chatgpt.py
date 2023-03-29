@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import gradio as gr
+gr.close_all()
 import random
 import torch
 import cv2
