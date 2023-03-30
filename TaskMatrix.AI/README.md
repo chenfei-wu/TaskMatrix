@@ -2,5 +2,5 @@
 
 Paper: [TaskMatrix.AI](https://arxiv.org/abs/2303.16434)
 
-<img src="./assets/paradigm.png" width="750">
-<img src="./assets/overview.png" width="750">
+<img src="https://github.com/microsoft/visual-chatgpt/blob/main/assets/paradigm.png" width="750">
+<img src="https://github.com/microsoft/visual-chatgpt/blob/main/assets/overview.png" width="750">
