@@ -6,6 +6,7 @@ accelerate
 addict
 albumentations
 basicsr
+clip-retrieval
 controlnet-aux
 diffusers
 einops
