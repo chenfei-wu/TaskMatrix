@@ -67,7 +67,8 @@ Previous conversation history:
 New input: {input}
 Since Visual ChatGPT is a text language model, Visual ChatGPT must use tools to observe images rather than imagination.
 The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGPT should remember to repeat important information in the final response for Human. 
-Thought: Do I need to use a tool? {agent_scratchpad}"""
+Thought: Do I need to use a tool? {agent_scratchpad} Let's think step by step.
+"""
 
 os.makedirs('image', exist_ok=True)
 
@@ -1011,7 +1012,7 @@ class ConversationBot:
 
     def run_text(self, text, state):
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
-        res = self.agent({"input": text})
+        res = self.agent({"input": text.strip()})
         res['output'] = res['output'].replace("\\", "/")
         response = re.sub('(image/\S*png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
         state = state + [(text, response)]
