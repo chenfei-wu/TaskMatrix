@@ -62,8 +62,22 @@ pip install -r requirements.txt
 # prepare your private OpenAI key (for Linux)
 export OPENAI_API_KEY={Your_Private_Openai_Key}
 
+# if you're using Azure OpenAI service, please add the following settings (for Linux)
+export OPENAI_API_TYPE=azure
+export OPENAI_API_VERSION=2022-12-01
+export OPENAI_API_BASE=https://{your-resource-name}.openai.azure.com
+export OPENAI_API_KEY={Your_Private_Openai_Key}
+export OPENAI_API_AZURE_DEPLOYMENT={Your_Azure_Deployment_Name}
+
 # prepare your private OpenAI key (for Windows)
 set OPENAI_API_KEY={Your_Private_Openai_Key}
+
+# if you're using Azure OpenAI service, please add the following settings (for Windows)
+set OPENAI_API_TYPE=azure
+set OPENAI_API_VERSION=2022-12-01
+set OPENAI_API_BASE=https://{your-resource-name}.openai.azure.com
+set OPENAI_API_KEY={Your_Private_Openai_Key}
+set OPENAI_API_AZURE_DEPLOYMENT={Your_Azure_Deployment_Name}
 
 # Start Visual ChatGPT !
 # You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
@@ -94,28 +108,28 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
 Here we list the GPU memory usage of each visual foundation model, you can specify which one you like:
 
 | Foundation Model        | GPU Memory (MB) |
-|------------------------|-----------------|
-| ImageEditing           | 3981            |
-| InstructPix2Pix        | 2827            |
-| Text2Image             | 3385            |
-| ImageCaptioning        | 1209            |
-| Image2Canny            | 0               |
-| CannyText2Image        | 3531            |
-| Image2Line             | 0               |
-| LineText2Image         | 3529            |
-| Image2Hed              | 0               |
-| HedText2Image          | 3529            |
-| Image2Scribble         | 0               |
-| ScribbleText2Image     | 3531            |
-| Image2Pose             | 0               |
-| PoseText2Image         | 3529            |
-| Image2Seg              | 919             |
-| SegText2Image          | 3529            |
-| Image2Depth            | 0               |
-| DepthText2Image        | 3531            |
-| Image2Normal           | 0               |
-| NormalText2Image       | 3529            |
-| VisualQuestionAnswering| 1495            |
+| ----------------------- | --------------- |
+| ImageEditing            | 3981            |
+| InstructPix2Pix         | 2827            |
+| Text2Image              | 3385            |
+| ImageCaptioning         | 1209            |
+| Image2Canny             | 0               |
+| CannyText2Image         | 3531            |
+| Image2Line              | 0               |
+| LineText2Image          | 3529            |
+| Image2Hed               | 0               |
+| HedText2Image           | 3529            |
+| Image2Scribble          | 0               |
+| ScribbleText2Image      | 3531            |
+| Image2Pose              | 0               |
+| PoseText2Image          | 3529            |
+| Image2Seg               | 919             |
+| SegText2Image           | 3529            |
+| Image2Depth             | 0               |
+| DepthText2Image         | 3531            |
+| Image2Normal            | 0               |
+| NormalText2Image        | 3529            |
+| VisualQuestionAnswering | 1495            |
 
 ## Acknowledgement
 We appreciate the open source of the following projects:

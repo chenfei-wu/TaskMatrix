@@ -23,7 +23,7 @@ from controlnet_aux import OpenposeDetector, MLSDdetector, HEDdetector
 from langchain.agents.initialize import initialize_agent
 from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.llms.openai import OpenAI
+from langchain.llms.openai import AzureOpenAI,OpenAI
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
@@ -178,6 +178,13 @@ def get_new_image_name(org_img_name, func_name="update"):
     new_file_name = f'{this_new_uuid}_{func_name}_{recent_prev_file_name}_{most_org_file_name}.png'
     return os.path.join(head, new_file_name)
 
+
+def get_llm_instance():
+    openai_type = os.getenv('OPENAI_API_TYPE',"")
+    if openai_type == "azure":
+        deployment = os.getenv('OPENAI_API_AZURE_DEPLOYMENT', "")
+        return AzureOpenAI(temperature=0, deployment_name=deployment)
+    return OpenAI(temperature=0)
 
 
 class MaskFormer:
@@ -876,7 +883,7 @@ class VisualQuestionAnswering:
 class InfinityOutPainting:
     template_model = True # Add this line to show this is a template model.
     def __init__(self, ImageCaptioning, ImageEditing, VisualQuestionAnswering):
-        self.llm = OpenAI(temperature=0)
+        self.llm = get_llm_instance()
         self.ImageCaption = ImageCaptioning
         self.ImageEditing = ImageEditing
         self.ImageVQA = VisualQuestionAnswering
@@ -978,7 +985,7 @@ class ConversationBot:
         if 'ImageCaptioning' not in load_dict:
             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
 
-        self.llm = OpenAI(temperature=0)
+        self.llm = get_llm_instance()
         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 
         self.models = {}
