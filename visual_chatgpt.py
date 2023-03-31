@@ -47,7 +47,7 @@ VISUAL_CHATGPT_FORMAT_INSTRUCTIONS = """To use a tool, please use the following 
 ```
 Thought: Do I need to use a tool? Yes
 Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
+Action Input: the input to the action (in English)
 Observation: the result of the action
 ```
 
