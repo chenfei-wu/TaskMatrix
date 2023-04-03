@@ -16,8 +16,8 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 - We propose the **template** idea in Visual ChatGPT!
     - A template is a **pre-defined execution flow** that assists ChatGPT in assembling complex tasks involving multiple foundation models. 
     - A template contains the **experiential solution** to complex tasks as determined by humans. 
-    - A template can **invoke multiple foundation models** or even **establish a new ChatGPT session**
-    - To define a **template**, simply adding a class with attributes `template_model = True`
+    - A template can **invoke multiple foundation models** or even **establish a new ChatGPT session**.
+    - To define a **template**, simply adding a class with attributes `template_model = True`.
 - Thanks to **@ShengmingYin** and **@thebestannie** for providing a template example in `InfinityOutPainting` class (see the following gif)
     - Firstly, run `python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:1,VisualQuestionAnswering_cuda:2"`
     - Secondly, say `extend the image to 2048x1024` to Visual ChatGPT!
