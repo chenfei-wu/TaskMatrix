@@ -13,6 +13,7 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 </a>
 
 ## Updates:
+- Now Visual ChatGPT can support Chinese. Thanks to **@Wang-Xiaodong1899** for his efforts.
 - We propose the **template** idea in Visual ChatGPT!
     - A template is a **pre-defined execution flow** that assists ChatGPT in assembling complex tasks involving multiple foundation models. 
     - A template contains the **experiential solution** to complex tasks as determined by humans. 

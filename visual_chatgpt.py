@@ -70,6 +70,51 @@ The thoughts and observations are only visible for Visual ChatGPT, Visual ChatGP
 Thought: Do I need to use a tool? {agent_scratchpad} Let's think step by step.
 """
 
+VISUAL_CHATGPT_PREFIX_CN = """Visual ChatGPT 旨在能够协助完成范围广泛的文本和视觉相关任务，从回答简单的问题到提供对广泛主题的深入解释和讨论。 Visual ChatGPT 能够根据收到的输入生成类似人类的文本，使其能够进行听起来自然的对话，并提供连贯且与手头主题相关的响应。
+
+Visual ChatGPT 能够处理和理解大量文本和图像。作为一种语言模型，Visual ChatGPT 不能直接读取图像，但它有一系列工具来完成不同的视觉任务。每张图片都会有一个文件名，格式为“image/xxx.png”，Visual ChatGPT可以调用不同的工具来间接理解图片。在谈论图片时，Visual ChatGPT 对文件名的要求非常严格，绝不会伪造不存在的文件。在使用工具生成新的图像文件时，Visual ChatGPT也知道图像可能与用户需求不一样，会使用其他视觉问答工具或描述工具来观察真实图像。 Visual ChatGPT 能够按顺序使用工具，并且忠于工具观察输出，而不是伪造图像内容和图像文件名。如果生成新图像，它将记得提供上次工具观察的文件名。
+
+Human 可能会向 Visual ChatGPT 提供带有描述的新图形。描述帮助 Visual ChatGPT 理解这个图像，但 Visual ChatGPT 应该使用工具来完成以下任务，而不是直接从描述中想象。有些工具将会返回英文描述，但你对用户的聊天应当采用中文。
+
+总的来说，Visual ChatGPT 是一个强大的可视化对话辅助工具，可以帮助处理范围广泛的任务，并提供关于范围广泛的主题的有价值的见解和信息。
+
+工具列表:
+------
+
+Visual ChatGPT 可以使用这些工具:"""
+
+VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN = """用户使用中文和你进行聊天，但是工具的参数应当使用英文。如果要调用工具，你必须遵循如下格式:
+
+```
+Thought: Do I need to use a tool? Yes
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+```
+
+当你不再需要继续调用工具，而是对观察结果进行总结回复时，你必须使用如下格式：
+
+
+```
+Thought: Do I need to use a tool? No
+{ai_prefix}: [your response here]
+```
+"""
+
+VISUAL_CHATGPT_SUFFIX_CN = """你对文件名的正确性非常严格，而且永远不会伪造不存在的文件。
+
+开始!
+
+因为Visual ChatGPT是一个文本语言模型，必须使用工具去观察图片而不是依靠想象。
+推理想法和观察结果只对Visual ChatGPT可见，需要记得在最终回复时把重要的信息重复给用户，你只能给用户返回中文句子。我们一步一步思考。在你使用工具时，工具的参数只能是英文。
+
+聊天历史:
+{chat_history}
+
+新输入: {input}
+Thought: Do I need to use a tool? {agent_scratchpad}
+"""
+
 os.makedirs('image', exist_ok=True)
 
 
@@ -978,9 +1023,6 @@ class ConversationBot:
         if 'ImageCaptioning' not in load_dict:
             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
 
-        self.llm = OpenAI(temperature=0)
-        self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
-
         self.models = {}
         # Load Basic Foundation Models
         for class_name, device in load_dict.items():
@@ -1000,6 +1042,18 @@ class ConversationBot:
                 if e.startswith('inference'):
                     func = getattr(instance, e)
                     self.tools.append(Tool(name=func.name, description=func.description, func=func))
+        self.llm = OpenAI(temperature=0)
+        self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
+    def init_agent(self, lang):
+        self.memory.clear() #clear previous history
+        if lang=='English':
+            PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS, VISUAL_CHATGPT_SUFFIX
+            place = "Enter text and press enter, or upload an image"
+            label_clear = "Clear"
+        else:
+            PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_CN, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN, VISUAL_CHATGPT_SUFFIX_CN
+            place = "输入文字并回车，或者上传图片"
+            label_clear = "清除"
         self.agent = initialize_agent(
             self.tools,
             self.llm,
@@ -1007,14 +1061,15 @@ class ConversationBot:
             verbose=True,
             memory=self.memory,
             return_intermediate_steps=True,
-            agent_kwargs={'prefix': VISUAL_CHATGPT_PREFIX, 'format_instructions': VISUAL_CHATGPT_FORMAT_INSTRUCTIONS,
-                          'suffix': VISUAL_CHATGPT_SUFFIX}, )
+            agent_kwargs={'prefix': PREFIX, 'format_instructions': FORMAT_INSTRUCTIONS,
+                          'suffix': SUFFIX}, )
+        return gr.update(visible = True), gr.update(visible = False), gr.update(placeholder=place), gr.update(value=label_clear)
 
     def run_text(self, text, state):
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
         res = self.agent({"input": text.strip()})
         res['output'] = res['output'].replace("\\", "/")
-        response = re.sub('(image/\S*png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
+        response = re.sub('(image/[-\w]*.png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
         state = state + [(text, response)]
         print(f"\nProcessed run_text, Input text: {text}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
@@ -1033,11 +1088,7 @@ class ConversationBot:
         img = img.convert('RGB')
         img.save(image_filename, "PNG")
         print(f"Resize image form {width}x{height} to {width_new}x{height_new}")
-        description = self.models['ImageCaptioning'].inference(image_filename)
-        Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
-        AI_prompt = "Received.  "
-        self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
-        state = state + [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
+        state = state + [(f"![](/file={image_filename})*{image_filename}*", '')]
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
         return state, state, f'{txt} {image_filename} '
@@ -1050,21 +1101,23 @@ if __name__ == '__main__':
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)
     with gr.Blocks(css="#chatbot .overflow-y-auto{height:500px}") as demo:
+        lang = gr.Radio(choices = ['Chinese','English'], value=None, label='Language')
         chatbot = gr.Chatbot(elem_id="chatbot", label="Visual ChatGPT")
         state = gr.State([])
-        with gr.Row():
+        with gr.Row(visible=False) as input_raws:
             with gr.Column(scale=0.7):
                 txt = gr.Textbox(show_label=False, placeholder="Enter text and press enter, or upload an image").style(
                     container=False)
             with gr.Column(scale=0.15, min_width=0):
                 clear = gr.Button("Clear")
             with gr.Column(scale=0.15, min_width=0):
-                btn = gr.UploadButton("Upload", file_types=["image"])
+                btn = gr.UploadButton(label="🖼️",file_types=["image"])
 
+        lang.change(bot.init_agent, [lang], [input_raws, lang, txt, clear])
         txt.submit(bot.run_text, [txt, state], [chatbot, state])
         txt.submit(lambda: "", None, txt)
         btn.upload(bot.run_image, [btn, state, txt], [chatbot, state, txt])
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-        demo.launch(server_name="0.0.0.0", server_port=1015)
+    demo.launch(server_name="0.0.0.0", server_port=7860)
