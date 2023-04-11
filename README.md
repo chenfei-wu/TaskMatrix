@@ -8,11 +8,12 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Open%20in%20Spaces-blue" alt="Open in Spaces">
 </a>
 
-<a src="https://colab.research.google.com/assets/colab-badge.svg" href="https://colab.research.google.com/drive/11BtP3h-w0dZjA-X8JsS9_eo8OeGYvxXB">
+<a src="https://colab.research.google.com/assets/colab-badge.svg" href="https://colab.research.google.com/drive/1P3jJqKEWEaeNcZg8fODbbWeQ3gxOHk2-?usp=sharing">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">
 </a>
 
 ## Updates:
+- Now Visual ChatGPT can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
 - We propose the **template** idea in Visual ChatGPT!
     - A template is a **pre-defined execution flow** that assists ChatGPT in assembling complex tasks involving multiple foundation models. 
     - A template contains the **experiential solution** to complex tasks as determined by humans. 
