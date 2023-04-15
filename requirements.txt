@@ -1,12 +1,13 @@
 langchain==0.0.101
-torch==1.12.1
-torchvision==0.13.1
+torch
+torchvision
 gradio==3.20.1
 accelerate
 addict
 albumentations
 basicsr
 controlnet-aux
+deepspeed
 diffusers
 einops
 imageio
@@ -19,6 +20,7 @@ open_clip_torch
 openai
 opencv-python
 prettytable
+requests==2.25.1
 safetensors
 streamlit
 test-tube

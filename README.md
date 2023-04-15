@@ -60,6 +60,9 @@ conda activate visgpt
 #  prepare the basic environments
 pip install -r requirements.txt
 
+# update torch to version 2.0 with latest CUDA
+pip3 install torch torchvision torchaudio torchtext --index-url https://download.pytorch.org/whl/cu118
+
 # prepare your private OpenAI key (for Linux)
 export OPENAI_API_KEY={Your_Private_Openai_Key}
 
@@ -88,6 +91,9 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
     Image2Seg_cpu,SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
     Image2Hed_cpu,HedText2Image_cuda:3,Image2Normal_cpu,
     NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
+    
+# Advice for NVIDIA 3090 24 GB
+python visual_chatgpt.py --load  "ImageCaptioning_cuda:0,ImageEditing_cuda:0,Text2Image_cuda:0,Image2Canny_cpu,CannyText2Image_cuda:0,Image2Depth_cpu,DepthText2Image_cpu,VisualQuestionAnswering_cuda:0,InstructPix2Pix_cuda:0,Image2Scribble_cpu,ScribbleText2Image_cpu,Image2Seg_cpu,SegText2Image_cpu,Image2Pose_cpu,PoseText2Image_cpu,Image2Hed_cpu,HedText2Image_cpu,Image2Normal_cpu,NormalText2Image_cpu,Image2Line_cpu,LineText2Image_cpu"
                              
 ```
 
