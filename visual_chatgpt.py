@@ -711,7 +711,7 @@ class Image2Seg:
                          "or perform segmentation on this image. "
                          "The input to this tool should be a string, representing the image_path")
     def inference(self, inputs):
-        image = Image.open(inputs)
+        image = Image.open(inputs).convert("RGB")
         pixel_values = self.image_processor(image, return_tensors="pt").pixel_values
         with torch.no_grad():
             outputs = self.image_segmentor(pixel_values)
