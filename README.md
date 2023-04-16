@@ -13,6 +13,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 </a>
 
 ## Updates:
+- Now Visual ChatGPT supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
+
+
 - Now Visual ChatGPT can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
 - We propose the **template** idea in Visual ChatGPT!
     - A template is a **pre-defined execution flow** that assists ChatGPT in assembling complex tasks involving multiple foundation models. 
@@ -82,14 +85,14 @@ python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
                                 
 # Advice for 4 Tesla V100 32GB                            
 python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,
-    MaskFormer_cuda:0,Inpainting_cuda:0,ImageCaptioning_cuda:0,
+    Inpainting_cuda:0,ImageCaptioning_cuda:0,
     Text2Image_cuda:1,Image2Canny_cpu,CannyText2Image_cuda:1,
     Image2Depth_cpu,DepthText2Image_cuda:1,VisualQuestionAnswering_cuda:2,
     InstructPix2Pix_cuda:2,Image2Scribble_cpu,ScribbleText2Image_cuda:2,
     SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
     Image2Hed_cpu,HedText2Image_cuda:3,Image2Normal_cpu,
     NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
-                             
+
 ```
 
 ## GPU memory usage
