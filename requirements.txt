@@ -1,7 +1,6 @@
 langchain==0.0.101
 torch==1.13.1
 torchvision==0.14.1
-gradio==3.20.1
 wget==3.2
 accelerate
 addict
@@ -10,6 +9,7 @@ basicsr
 controlnet-aux
 diffusers
 einops
+gradio
 imageio
 imageio-ffmpeg
 invisible-watermark
@@ -28,5 +28,3 @@ torchmetrics
 transformers
 webdataset
 yapf
-git+https://github.com/IDEA-Research/GroundingDINO.git
-git+https://github.com/facebookresearch/segment-anything.git

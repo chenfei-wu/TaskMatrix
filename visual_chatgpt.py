@@ -11,7 +11,7 @@ import math
 import numpy as np
 import argparse
 import inspect
-
+import tempfile
 from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 from transformers import pipeline, BlipProcessor, BlipForConditionalGeneration, BlipForQuestionAnswering
 from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
@@ -27,14 +27,14 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 
 # Grounding DINO
-import extensions.GroundingDINO.groundingdino.datasets.transforms as T
-from extensions.GroundingDINO.groundingdino.models import build_model
-from extensions.GroundingDINO.groundingdino.util import box_ops
-from extensions.GroundingDINO.groundingdino.util.slconfig import SLConfig
-from extensions.GroundingDINO.groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
+import groundingdino.datasets.transforms as T
+from groundingdino.models import build_model
+from groundingdino.util import box_ops
+from groundingdino.util.slconfig import SLConfig
+from groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
 
 # segment anything
-from extensions.segment_anything.segment_anything import build_sam, SamPredictor, SamAutomaticMaskGenerator
+from segment_anything import build_sam, SamPredictor, SamAutomaticMaskGenerator
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -870,10 +870,11 @@ class Segmenting:
 
 
     @prompts(name="Segment the Image",
-             description="useful when you want to detect segmentations of the image. "
-                         "like: segment this image, or generate segmentations on this image, "
+             description="useful when you want to segment all the part of the image, but not segment a certain object."
+                         "like: segment all the object in this image, or generate segmentations on this image, "
+                         "or segment the image,"
                          "or perform segmentation on this image, "
-                         "or segment all the object in this image"
+                         "or segment all the object in this image."
                          "The input to this tool should be a string, representing the image_path")
     def inference_all(self,image_path):
         image = cv2.imread(image_path)
@@ -910,17 +911,19 @@ class Text2Box:
         self.device = device
         self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         self.model_checkpoint_path = os.path.join("checkpoints","groundingdino")
+        self.model_config_path = os.path.join("checkpoints","grounding_config.py")
         self.download_parameters()
         self.box_threshold = 0.3
         self.text_threshold = 0.25
-        self.model_config_path = "extensions/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
         self.grounding = (self.load_model()).to(self.device)
 
     def download_parameters(self):
         url = "https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth"
         if not os.path.exists(self.model_checkpoint_path):
             wget.download(url,out=self.model_checkpoint_path)
-
+        config_url = "https://raw.githubusercontent.com/IDEA-Research/GroundingDINO/main/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+        if not os.path.exists(self.model_config_path):
+            wget.download(config_url,out=self.model_config_path)
     def load_image(self,image_path):
          # load image
         image_pil = Image.open(image_path).convert("RGB")  # load image
@@ -1303,7 +1306,7 @@ class ConversationBot:
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
         res = self.agent({"input": text.strip()})
         res['output'] = res['output'].replace("\\", "/")
-        response = re.sub('(image/[-\w]*.png)', lambda m: f'![](/file={m.group(0)})*{m.group(0)}*', res['output'])
+        response = re.sub('(image/[-\w]*.png)', lambda m: f'![](file={m.group(0)})*{m.group(0)}*', res['output'])
         state = state + [(text, response)]
         print(f"\nProcessed run_text, Input text: {text}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
@@ -1330,7 +1333,7 @@ class ConversationBot:
             Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
             AI_prompt = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
-        state = state + [(f"![](/file={image_filename})*{image_filename}*", AI_prompt)]
+        state = state + [(f"![](file={image_filename})*{image_filename}*", AI_prompt)]
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
               f"Current Memory: {self.agent.memory.buffer}")
         return state, state, f'{txt} {image_filename} '
