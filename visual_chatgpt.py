@@ -27,14 +27,14 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 
 # Grounding DINO
-import extensions.GroundingDINO.groundingdino.datasets.transforms as T
-from extensions.GroundingDINO.groundingdino.models import build_model
-from extensions.GroundingDINO.groundingdino.util import box_ops
-from extensions.GroundingDINO.groundingdino.util.slconfig import SLConfig
-from extensions.GroundingDINO.groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
+import groundingdino.datasets.transforms as T
+from groundingdino.models import build_model
+from groundingdino.util import box_ops
+from groundingdino.util.slconfig import SLConfig
+from groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
 
 # segment anything
-from extensions.segment_anything.segment_anything import build_sam, SamPredictor, SamAutomaticMaskGenerator
+from segment_anything import build_sam, SamPredictor, SamAutomaticMaskGenerator
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -870,10 +870,11 @@ class Segmenting:
 
 
     @prompts(name="Segment the Image",
-             description="useful when you want to detect segmentations of the image. "
-                         "like: segment this image, or generate segmentations on this image, "
+             description="useful when you want to segment all the part of the image, but not segment a certain object."
+                         "like: segment all the object in this image, or generate segmentations on this image, "
+                         "or segment the image,"
                          "or perform segmentation on this image, "
-                         "or segment all the object in this image"
+                         "or segment all the object in this image."
                          "The input to this tool should be a string, representing the image_path")
     def inference_all(self,image_path):
         image = cv2.imread(image_path)
@@ -913,7 +914,7 @@ class Text2Box:
         self.download_parameters()
         self.box_threshold = 0.3
         self.text_threshold = 0.25
-        self.model_config_path = "extensions/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+        self.model_config_path = "extensions/grounding_config.py"
         self.grounding = (self.load_model()).to(self.device)
 
     def download_parameters(self):
@@ -1364,4 +1365,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(server_name="0.0.0.0", server_port=7861)
