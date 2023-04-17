@@ -14,12 +14,6 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 
 ## Updates:
 - Now Visual ChatGPT supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
-    - You can install the following packages to experience the new features.
-
-    ``` 
-    pip install  git+https://github.com/IDEA-Research/GroundingDINO.git
-    pip install  git+https://github.com/facebookresearch/segment-anything.git
-    ```
 
 
 - Now Visual ChatGPT can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
@@ -68,6 +62,8 @@ conda activate visgpt
 
 #  prepare the basic environments
 pip install -r requirements.txt
+pip install  git+https://github.com/IDEA-Research/GroundingDINO.git
+pip install  git+https://github.com/facebookresearch/segment-anything.git
 
 # prepare your private OpenAI key (for Linux)
 export OPENAI_API_KEY={Your_Private_Openai_Key}
