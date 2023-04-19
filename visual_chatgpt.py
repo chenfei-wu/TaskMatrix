@@ -1058,17 +1058,17 @@ class Inpainting:
 
         self.inpaint = StableDiffusionInpaintPipeline.from_pretrained(
             "runwayml/stable-diffusion-inpainting", revision=self.revision, torch_dtype=self.torch_dtype).to(device)
-    def __call__(self, prompt, original_image, mask_image):
-        update_image = self.inpaint(prompt=prompt, image=original_image.resize((512, 512)),
-                                     mask_image=mask_image.resize((512, 512))).images[0]
+    def __call__(self, prompt, image, mask_image, height=512, width=512, num_inference_steps=50):
+        update_image = self.inpaint(prompt=prompt, image=image.resize((width, height)),
+                                     mask_image=mask_image.resize((width, height)), height=height, width=width, num_inference_steps=num_inference_steps).images[0]
         return update_image
 
 class InfinityOutPainting:
     template_model = True # Add this line to show this is a template model.
-    def __init__(self, ImageCaptioning, ImageEditing, VisualQuestionAnswering):
+    def __init__(self, ImageCaptioning, Inpainting, VisualQuestionAnswering):
         self.llm = OpenAI(temperature=0)
         self.ImageCaption = ImageCaptioning
-        self.ImageEditing = ImageEditing
+        self.inpaint = Inpainting
         self.ImageVQA = VisualQuestionAnswering
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, ' \
@@ -1135,9 +1135,9 @@ class InfinityOutPainting:
             temp_canvas.paste(old_img, (x, y))
             temp_mask.paste(0, (x, y, x + old_img.width, y + old_img.height))
             resized_temp_canvas, resized_temp_mask = self.resize_image(temp_canvas), self.resize_image(temp_mask)
-            image = self.ImageEditing.inpaint(prompt=prompt, image=resized_temp_canvas, mask_image=resized_temp_mask,
+            image = self.inpaint(prompt=prompt, image=resized_temp_canvas, mask_image=resized_temp_mask,
                                               height=resized_temp_canvas.height, width=resized_temp_canvas.width,
-                                              num_inference_steps=50).images[0].resize(
+                                              num_inference_steps=50).resize(
                 (temp_canvas.width, temp_canvas.height), Image.ANTIALIAS)
             image = blend_gt2pt(old_img, image)
             old_img = image
@@ -1238,7 +1238,7 @@ class ImageEditing:
         mask = self.pad_edge(mask,padding=20) #numpy
         mask_image = Image.fromarray(mask)
 
-        updated_image = self.inpaint(prompt=replace_with_txt, original_image=image_pil,
+        updated_image = self.inpaint(prompt=replace_with_txt, image=image_pil,
                                      mask_image=mask_image)
         updated_image_path = get_new_image_name(image_path, func_name="replace-something")
         updated_image = updated_image.resize(image_pil.size)

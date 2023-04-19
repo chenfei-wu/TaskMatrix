@@ -14,6 +14,8 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 
 ## Updates:
 - Now Visual ChatGPT supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
+    - Firstly, run `python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,Inpainting_cuda:0,ImageCaptioning_cuda:0"`
+    - Then, say `find xxx in the image` or `segment xxx in the image`. `xxx` is an object. Visual ChatGPT will return the detection or segmentation result!
 
 
 - Now Visual ChatGPT can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
@@ -23,9 +25,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
     - A template can **invoke multiple foundation models** or even **establish a new ChatGPT session**
     - To define a **template**, simply adding a class with attributes `template_model = True`
 - Thanks to **@ShengmingYin** and **@thebestannie** for providing a template example in `InfinityOutPainting` class (see the following gif)
-    - Firstly, run `python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:1,VisualQuestionAnswering_cuda:2"`
+    - Firstly, run `python visual_chatgpt.py --load "Inpainting_cuda:0,ImageCaptioning_cuda:0,VisualQuestionAnswering_cuda:0"`
     - Secondly, say `extend the image to 2048x1024` to Visual ChatGPT!
-    - By simply creating an `InfinityOutPainting` template, Visual ChatGPT can seamlessly extend images to any size through collaboration with existing `ImageCaptioning`, `ImageEditing`, and `VisualQuestionAnswering` foundation models, **without the need for additional training**.
+    - By simply creating an `InfinityOutPainting` template, Visual ChatGPT can seamlessly extend images to any size through collaboration with existing `ImageCaptioning`, `Inpainting`, and `VisualQuestionAnswering` foundation models, **without the need for additional training**.
 - **Visual ChatGPT needs the effort of the community! We crave your contribution to add new and interesting features!**
 <img src="./assets/demo_inf.gif" width="750">
 
