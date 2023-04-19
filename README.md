@@ -13,7 +13,9 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 </a>
 
 ## Updates:
-- Now Visual ChatGPT supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. Run `python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,Inpainting_cuda:0,ImageCaptioning_cuda:0"`
+- Now Visual ChatGPT supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
+    - Firstly, run `python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,Inpainting_cuda:0,ImageCaptioning_cuda:0"`
+    - Then, say `find xxx in the image` or `segment xxx in the image`. `xxx` is an object. Visual ChatGPT will return the detection or segmentation result!
 
 
 - Now Visual ChatGPT can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
