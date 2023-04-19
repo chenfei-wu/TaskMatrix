@@ -1,6 +1,6 @@
-# Visual ChatGPT 
+# TaskMatrix
 
-**Visual ChatGPT** connects ChatGPT and a series of Visual Foundation Models to enable **sending** and **receiving** images during chatting.
+**TaskMatrix** connects ChatGPT and a series of Visual Foundation Models to enable **sending** and **receiving** images during chatting.
 
 See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with Visual Foundation Models</font>](https://arxiv.org/abs/2303.04671)
 
@@ -13,22 +13,22 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 </a>
 
 ## Updates:
-- Now Visual ChatGPT supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
+- Now TaskMatrix supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
     - Firstly, run `python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,Inpainting_cuda:0,ImageCaptioning_cuda:0"`
-    - Then, say `find xxx in the image` or `segment xxx in the image`. `xxx` is an object. Visual ChatGPT will return the detection or segmentation result!
+    - Then, say `find xxx in the image` or `segment xxx in the image`. `xxx` is an object. TaskMatrix will return the detection or segmentation result!
 
 
-- Now Visual ChatGPT can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
-- We propose the **template** idea in Visual ChatGPT!
+- Now TaskMatrix can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
+- We propose the **template** idea in TaskMatrix!
     - A template is a **pre-defined execution flow** that assists ChatGPT in assembling complex tasks involving multiple foundation models. 
     - A template contains the **experiential solution** to complex tasks as determined by humans. 
     - A template can **invoke multiple foundation models** or even **establish a new ChatGPT session**
     - To define a **template**, simply adding a class with attributes `template_model = True`
 - Thanks to **@ShengmingYin** and **@thebestannie** for providing a template example in `InfinityOutPainting` class (see the following gif)
     - Firstly, run `python visual_chatgpt.py --load "Inpainting_cuda:0,ImageCaptioning_cuda:0,VisualQuestionAnswering_cuda:0"`
-    - Secondly, say `extend the image to 2048x1024` to Visual ChatGPT!
-    - By simply creating an `InfinityOutPainting` template, Visual ChatGPT can seamlessly extend images to any size through collaboration with existing `ImageCaptioning`, `Inpainting`, and `VisualQuestionAnswering` foundation models, **without the need for additional training**.
-- **Visual ChatGPT needs the effort of the community! We crave your contribution to add new and interesting features!**
+    - Secondly, say `extend the image to 2048x1024` to TaskMatrix!
+    - By simply creating an `InfinityOutPainting` template, TaskMatrix can seamlessly extend images to any size through collaboration with existing `ImageCaptioning`, `Inpainting`, and `VisualQuestionAnswering` foundation models, **without the need for additional training**.
+- **TaskMatrix needs the effort of the community! We crave your contribution to add new and interesting features!**
 <img src="./assets/demo_inf.gif" width="750">
 
 
@@ -51,7 +51,7 @@ By leveraging **both general and deep knowledge**, we aim at building an AI that
 
 ```
 # clone the repo
-git clone https://github.com/microsoft/visual-chatgpt.git
+git clone https://github.com/microsoft/TaskMatrix.git
 
 # Go to directory
 cd visual-chatgpt
@@ -73,7 +73,7 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 # prepare your private OpenAI key (for Windows)
 set OPENAI_API_KEY={Your_Private_Openai_Key}
 
-# Start Visual ChatGPT !
+# Start TaskMatrix !
 # You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
 # Visual Foundation Model to use and where it will be loaded to
 # The model and device are separated by underline '_', the different models are separated by comma ','
@@ -138,6 +138,6 @@ We appreciate the open source of the following projects:
 [BLIP](https://github.com/salesforce/BLIP) &#8194;
 
 ## Contact Information
-For help or issues using the Visual ChatGPT, please submit a GitHub issue.
+For help or issues using the TaskMatrix, please submit a GitHub issue.
 
 For other communications, please contact Chenfei WU (chewu@microsoft.com) or Nan DUAN (nanduan@microsoft.com).
