@@ -11,7 +11,7 @@ As shown in the following figure:
 <img src="https://github.com/microsoft/visual-chatgpt/blob/main/assets/low-code-llm.png" width="1000">
 
 ## Paper
-Low Code LLM [Coming Soon]
+[Low Code LLM](https://arxiv.org/abs/2304.08103v1)
 
 ## Codes and System
 In progress, coming in a very near future...
