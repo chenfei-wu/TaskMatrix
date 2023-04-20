@@ -1,0 +1,20 @@
+[
+    {
+        "task_prompt": "Write an essay about drunk driving issue.",
+        "confirmed_workflow": "[{\"stepId\": \"STEP 1\", \"stepName\": \"Research\", \"stepDescription\": \"Gather statistics and information about drunk driving issue\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 2\", \"stepName\": \"Identify the causes\", \"stepDescription\": \"Analyze the reasons behind drunk driving\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 3\", \"stepName\": \"Examine the consequences\", \"stepDescription\": \"Investigate the outcomes of drunk driving\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 4\", \"stepName\": \"Develop a prevention plan\", \"stepDescription\": \"Create a plan to prevent drunk driving\", \"jumpLogic\": [{\"Condition\": \"if 'lack of information'\", \"Target\": \"STEP 1\"}, {\"Condition\": \"if 'unclear causes'\", \"Target\": \"STEP 2\"}, {\"Condition\": \"if 'incomplete analysis'\", \"Target\": \"STEP 2\"}, {\"Condition\": \"if 'unrealistic plan'\", \"Target\": \"STEP 4\"}], \"extension\": []}]",
+        "history": [],
+        "curr_input": "write the essay and show me."
+    },
+    {
+        "task_prompt": "Write an bolg about Microsoft.",
+        "confirmed_workflow": "[{\"stepId\": \"STEP 1\", \"stepName\": \"Research\", \"stepDescription\": \"Gather information about Microsoft's history, products, and services\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 2\", \"stepName\": \"Analyze\", \"stepDescription\": \"Organize the gathered information into categories and identify key points\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 3\", \"stepName\": \"Outline\", \"stepDescription\": \"Create an outline based on the key points and categories\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 4\", \"stepName\": \"Write\", \"stepDescription\": \"Write a draft of the blog post using the outline as a guide\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 5\", \"stepName\": \"Edit\", \"stepDescription\": \"Review and revise the draft for clarity and accuracy\", \"jumpLogic\": [{\"Condition\": \"need for further editing\", \"Target\": \"STEP 4\"}], \"extension\": []}, {\"stepId\": \"STEP 6\", \"stepName\": \"Publish\", \"stepDescription\": \"Post the final version of the blog post on a suitable platform\", \"jumpLogic\": [], \"extension\": []}]",
+        "history": [],
+        "curr_input": "write the blog and show me."
+    },
+    {
+        "task_prompt": "I want to write a two-player battle game.",
+        "confirmed_workflow": "[{\"stepId\": \"STEP 1\", \"stepName\": \"Game Concept\", \"stepDescription\": \"Decide on the game concept and mechanics\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 2\", \"stepName\": \"Game Design\", \"stepDescription\": \"Create a rough sketch of the game, including the game board, characters, and rules\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 3\", \"stepName\": \"Programming\", \"stepDescription\": \"Write the code for the game\", \"jumpLogic\": [{\"Condition\": \"if 'game mechanics are too complex'\", \"Target\": \"STEP 1\"}], \"extension\": []}, {\"stepId\": \"STEP 4\", \"stepName\": \"Testing\", \"stepDescription\": \"Test the game for bugs and glitches\", \"jumpLogic\": [{\"Condition\": \"if 'gameplay is not balanced'\", \"Target\": \"STEP 2\"}], \"extension\": []}, {\"stepId\": \"STEP 5\", \"stepName\": \"Polishing\", \"stepDescription\": \"Add finishing touches to the game, including graphics and sound effects\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 6\", \"stepName\": \"Release\", \"stepDescription\": \"Publish the game for players to enjoy\", \"jumpLogic\": [], \"extension\": []}]",
+        "history": [{"role": "asistant", "content": "sure, I can write it for you, do you want me show you the code?"}],
+        "curr_input": "Sure."
+    }
+]

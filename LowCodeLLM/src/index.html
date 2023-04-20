@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tutorial Demo</title>
+    <style>
+      h1{
+        text-align: center;
+      }
+      #container{
+        display: flex;
+        flex: 1;
+      }
+      #prompt-container{
+        width: 800px;
+      }
+      #mountNode{
+        margin-top: 50px;
+        position: relative;
+        width: 800px;
+        height: 750px;
+      }
+      #mountNode canvas{
+        background-color: antiquewhite;
+      }
+      #dia-container{
+        margin: 0 30px;
+        border: 1px solid black;
+        width: 600px;
+        height: 870px;
+        padding: 10px;
+      }
+      #dialogues{
+        height: 835px;
+        width: 100%;
+        overflow-y: scroll
+      }
+
+      #contextMenu {
+        position: absolute;
+        list-style-type: none;
+        padding: 10px 8px;
+        left: -150px;
+        background-color: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e2e2e2;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #545454;
+      }
+      #contextMenu li {
+        cursor: pointer;
+        list-style-type:none;
+        list-style: none;
+        margin-left: 0px;
+      }
+      #contextMenu li:hover {
+        color: #aaa;
+      }
+      .dia-me{
+        margin: 10px;
+        margin-left: 50px;
+        padding: 5px;
+        border: 1px solid blue;
+        text-align: right;
+      }
+      .dia-ai{
+        margin: 10px;
+        margin-right: 50px;
+        padding: 5px;
+        border: 1px solid red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Low Code Demo</h1>
+    <div id="container">
+      <div id="left">
+        <div id="prompt-container">
+          Task:
+          <br/>
+          <input id="prompt-text" type="text" placeholder="type your task here "size="50">
+          <button id="prompt-confirm" onclick="promptConfirm()">Confirm</button>
+        </div>
+        <div id="mountNode"></div>
+        <button id="regenerate" onclick="promptConfirm()">Regenerate</button>
+        <!-- <button id="workflow-Confirm" onclick="workflowConfirm()">Confirm</button> -->
+      </div>
+      <div id="right">
+        <div id="dia-container">
+          <div id="dialogues"></div>
+          <input id="message-text" type="text" placeholder="type your question here" size="70">
+          <button id="dia-confirm" onclick="diaConfirm()">Send</button>
+        </div>
+      </div>
+    </div>
+    
+
+    <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.7.1/dist/g6.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      function dataToG6(oriData, color){
+        let nodes = [];
+        let edges = [];
+
+        for (let index = 0; index < oriData.length; index++) {
+          const item = oriData[index];
+          let label = "";
+          if (item.stepDescription.length > 50){
+            label = item.stepDescription.substring(0, 50) + "-\n" + item.stepDescription.substring(50)
+          } else{
+            label = item.stepDescription
+          }
+           
+          let n = {
+            id: item.stepId,
+            x: 100,
+            y: 100 * (index + 1),
+            type: 'rect',
+            label: item.stepId + ":" + item.stepName + "\n" +  label,
+          };
+          nodes.push(n);
+          if (item.jumpLogic.length > 0){
+            let jumpLogic = item.jumpLogic
+            for (let j = 0; j < jumpLogic.length; j++){
+              let e = {
+                source: item.stepId, // start id
+                target: jumpLogic[j].Target, // target id
+                label: jumpLogic[j].Condition, // jump condition text
+              }
+              edges.push(e);
+            }
+          }
+          if(index > 0){
+            let e = {
+                source: oriData[index-1].stepId, // start id
+                target: item.stepId, // target id
+                label: '', // jump condition text
+              }
+              edges.push(e);
+          }
+        }
+        return {
+          nodes,
+          edges,
+        }
+      }
+
+      function G6ToData(){
+        let nodes = graph.getNodes();
+        let data = [];
+        let edges = graph.getEdges();
+        for (const n of nodes) {
+          let id = n.getID();
+          let label = n.getModel().label;
+          let strs = label.split('\n');
+          let name = strs[0].substring(id.length);
+          let des = "";
+          if(strs.length == 2){
+            des = strs[1]
+          } else {
+            des = strs[1].substring(0, strs[1].length - 1) + strs[2]
+          }
+          let o = {
+            stepId: id,
+            stepName: name,
+            stepDescription: des,
+            jumpLogic: [],
+            extension: []
+          }
+          data.push(o)
+        }
+        for (const e of edges) {
+          let label = e.getModel().label;
+          if(label === '')
+            continue;
+          let source = e.getModel().source;
+          let target = e.getModel().target;
+          let o = {
+            Condition: label, 
+            Target: target
+          }
+          for (const n of data){
+            if(n.stepId === source){
+              n.jumpLogic.push(o);
+              break;
+            }
+          }
+        }
+
+        for (const n of data){
+          let sub = n.stepId.split('.');
+          if(sub.length === 1){
+            continue;
+          } else {
+            let parentNode;
+            for (const p of data){
+              if(p.stepId === sub[0]){
+                parentNode = p;
+                break;
+              }
+            }
+            for(let i = 1; i < sub.length - 1; i ++){
+              parentNode = parentNode.extension[parseInt(sub[i])]
+            }
+            parentNode.extension.push(JSON.parse(JSON.stringify(n)));
+            n.flag = true;
+          }
+        }
+
+        for (let i = data.length - 1; i >= 0; i --){
+          if(data[i].flag === true)
+            data.splice(i, 1)
+        }
+
+        return JSON.stringify(data, null, 2);
+      }
+
+
+      const contextMenu = new G6.Menu({
+        getContent(evt) {
+          let header;
+          if (evt.target && evt.target.isCanvas && evt.target.isCanvas()) {
+            header = 'Canvas ContextMenu';
+          } else if (evt.item) {
+            const itemType = evt.item.getType();
+            header = `${itemType.toUpperCase()} Operation`;
+          }
+          return `
+          <h3>${header}</h3>
+          <ul>
+            <li id="add">Add</li>
+            <li id="delete">Delete</li>
+            <li id="edit">Edit</li>
+            <li id="moveup">Move Forward</li>
+            <li id="extend">Extend</li>
+            <li id="addcondition">Add Condition</li>
+          </ul>`;
+        },
+        handleMenuClick: (target, item) => {
+          if (target.id === "add") {
+            console.log(item)
+            const nodeModel = {
+              id: 'NEW STEP',
+              label: 'NEW STEP' + ":" + "STEP Name" + "\n" +  "STEP Description",
+              x: 200,
+              y: 150,
+              type: 'rect',
+            };
+            const edgeModel = {
+              source: item.getID(), // start id
+              target: 'NEW STEP', // target id
+              label: '', // jump condition text
+            };
+
+            graph.addItem('node', nodeModel);
+            graph.addItem('edge', edgeModel);
+          } else if(target.id === "delete"){
+            for(const i of item.getEdges()){
+              graph.removeItem(i);
+            }
+            graph.removeItem(item);
+          }else if(target.id === "edit"){
+            let p = prompt("Please Edit STEP", item.getModel().label);
+            const model = {
+              id: item.getID(),
+              label: p,
+            };
+            graph.updateItem(item, model);
+          }else if(target.id === "moveup"){
+            let edges = item.getEdges()
+            let cnt = 0;
+            let upNode;
+            for (const e of edges) {
+              if (e.getModel().target === item.getID()){
+                cnt ++;
+                upNode = graph.findById(e.getModel().source)
+              }
+            }
+            if(cnt !== 1)
+              alert("Cannot Move Forward.");
+            else{
+              for (const e of upNode.getEdges()) {
+                if (e.getModel().target === upNode.getID()){
+                  let eModel = {
+                    target: item.getID(), // target id
+                  }
+                  graph.updateItem(e, eModel);
+                }
+              }
+              
+              for (const e of item.getEdges()) {
+                if (e.getModel().source === item.getID()){
+                  let eModel = {
+                    source: upNode.getID(), // target id
+                  }
+                  graph.updateItem(e, eModel);
+                }
+              }
+
+              for (const e of upNode.getEdges()) {
+                if (e.getModel().target === item.getID()){
+                  let eModel = {
+                    source: item.getID(),
+                    target: upNode.getID(), // target id
+                  }
+                  graph.updateItem(e, eModel);
+                }
+              }
+            }
+        
+          }else if(target.id === "extend"){
+            let extensionData = []
+            let data = JSON.stringify({
+              "task_prompt": document.getElementById("prompt-text").value,
+              "current_workflow": G6ToData(),
+              "step": item.getID()
+            });
+            console.log(data)
+            axios.post("http://127.0.0.1:8888/api/extend_workflow", data, {
+              headers: {"Content-Type": "application/json"}
+            })
+            .then(response => {
+              console.log(response.data);
+              extensionData = response.data
+              res = dataToG6(extensionData)
+              for (let index = 0; index < res.nodes.length; index++) {
+                const element = res.nodes[index];
+                graph.addItem('node', element);
+              }
+              for (let index = 0; index < res.edges.length; index++) {
+                const element = res.edges[index];
+                graph.addItem('edge', element);
+              }
+              const edgeStart = {
+                source: item.getID(), // start id
+                target: res.nodes[0].id, // target id
+                label: '', // jump condition text
+              };
+              graph.addItem('edge', edgeStart);
+            })
+            .catch(error => {
+              console.error(error);
+            });
+
+          }else if(target.id === "addcondition"){
+            let id = prompt("Plese Enter NodeID (e.g., STEP 1)");
+            node = graph.findById(id);
+            if(!node){
+              alert("No Such Node")
+              return;
+            }
+            let c = prompt("Please Enter Condition");
+            const model = {
+              source: item.getID(), // start id
+              target: id, // target id
+              label: c, // jump condition text
+            };
+            graph.addItem("edge", model);
+          }else if(target.id === "delcondition"){
+            
+          }
+        },
+        // offsetX and offsetY include the padding of the parent container
+        offsetX: 16 + 10,
+        offsetY: 0,
+        // the types of items that allow the menu show up
+        itemTypes: ['node', 'edge', 'canvas'],
+      });
+
+      const graph = new G6.Graph({
+        container: 'mountNode',
+        width: 800, // graph width
+        height: 750, // graph height
+        modes: {
+          default: ['drag-canvas', 'zoom-canvas', 'drag-node'], // allow to drag
+        },
+        // fitView: true,
+        // fitViewPadding: [20, 40, 50, 20],
+        layout: {
+          
+          type: 'force', 
+          linkDistance: 200, 
+          preventOverlap: true, 
+          // nodeSize: 30        
+        },
+        plugins: [contextMenu],
+        defaultNode: {
+          size: [450, 80], 
+          style: {
+            fill: 'steelblue',
+            stroke: '#666',
+            lineWidth: 1, 
+          },
+          
+          labelCfg: {
+            
+            style: {
+              fill: '#fff', // node text color
+              fontSize: 15, // node text size
+            },
+          },
+        },
+        defaultEdge: {
+          style: {
+            opacity: 0.6,
+            stroke: 'grey',
+            endArrow: {
+              path: G6.Arrow.vee(15, 20, 15), // arrows
+              d: 15
+            },        
+          },
+          // edg text
+          labelCfg: {
+            autoRotate: true, 
+            style:{
+              fontSize: 15,
+            }
+          },
+        },
+        nodeStateStyles: {
+          // hover
+          hover: {
+            fill: 'lightsteelblue',
+          },
+          // click
+          click: {
+            stroke: '#000',
+            lineWidth: 3,
+          },
+        },
+      });
+
+      function promptConfirm(){
+        let prompt = document.getElementById("prompt-text").value;
+        if (prompt == "") {
+          alert("Please Enter Task.")
+          return
+        }
+        // TODO: API background prompt
+        // axios.post(url [,data , [,config]])
+        // get data from API
+        // let a = axios.post("url");
+        let data = JSON.stringify({"task_prompt": prompt});
+        axios.post("http://127.0.0.1:8888/api/get_workflow", data, {
+          headers: {"Content-Type": "application/json"}
+        })
+        .then(response => {
+          console.log(response.data);
+          main(response.data);
+        })
+        .catch(error => {
+          alert("Network error, please try again.")
+          console.error(error);
+        });
+        main(data);
+      }
+
+      function workflowConfirm(){
+        let data = G6ToData();
+        console.log(data)
+      }
+      
+      function diaConfirm(){
+        let task_prompt = document.getElementById("prompt-text").value;
+        let curr_workflow = G6ToData();
+        
+        let dialogues = document.getElementById("dialogues");
+        let history = [];
+        for (let i = 0; i < dialogues.children.length; i++) {
+          let currentClass = dialogues.children[i].classList[0];
+          let currentText = dialogues.children[i].textContent;
+          let currentUser = ""
+          if (currentClass === "dia-me") {
+            currentUser = "user";
+          } else if (currentClass === "dia-ai") {
+            currentUser = "assistant";
+          }
+          history.push({"role": currentUser, "content":currentText});
+        }
+        console.log(history)
+        let message = document.getElementById("message-text").value;
+        document.getElementById("message-text").value = "";
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "dia-me"
+        messageDiv.innerHTML = message;
+        dialogues.appendChild(messageDiv);
+
+        // post
+        let llm_res = ""
+        let data = JSON.stringify({
+          "task_prompt": task_prompt,
+          "confirmed_workflow": curr_workflow,
+          "curr_input": message,
+          "history": history
+        });
+        axios.post("http://127.0.0.1:8888/api/execute", data, {
+          headers: {"Content-Type": "application/json"}
+        })
+        .then(response => {
+          console.log(response.data);
+          llm_res = response.data;
+          console.log(llm_res);
+          const aiDiv = document.createElement("div");
+          aiDiv.className = "dia-ai"
+          aiDiv.innerHTML = llm_res
+          dialogues.appendChild(aiDiv);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+      }
+      const main = async (data) => {
+        graph.data(dataToG6(data));
+        graph.render();
+        graph.on('node:click', (e) => {
+          // set all clicked node to not clicked
+          const clickNodes = graph.findAllByState('node', 'click');
+          clickNodes.forEach((cn) => {
+            graph.setItemState(cn, 'click', false);
+          });
+          const nodeItem = e.item; // get the clicked node
+          graph.setItemState(nodeItem, 'click', true); // set the click status of current as true
+        });
+      };
+      
+
+    </script>
+  </body>
+</html>
