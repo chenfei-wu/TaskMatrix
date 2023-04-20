@@ -2,17 +2,51 @@
 
 **Low-code LLM** is a novel human-LLM interaction pattern, involving human in the loop to achieve more controllable and stable responses.
 
-As shown in the following figure: 
-- A Planning LLM generates a workflow for the complex tasks. The workflow is highly structured and support users to easily edit it with dragging and dropping.
-- Users can edit the workflow in six pre-defined low-code operations, which are all supported by clicking, dragging or text editing. 
-- The reviewed workflow will guide the Implement LLM to generate responses. 
-- Users can continue refining the workflow  until getting a satisfactory results.
+See our paper: [Low-code LLM: Visual Programming over LLMs](https://arxiv.org/abs/2304.08103)
 
-<img src="https://github.com/microsoft/visual-chatgpt/blob/main/assets/low-code-llm.png" width="1000">
+In the future, [TaskMatrix.AI](https://arxiv.org/abs/2304.08103) can enhance task automation by breaking down tasks more effectively and utilizing existing foundation models and APIs of other AI models and systems to achieve diversified tasks in both digital and physical domains. And the low-code human-LLM interaction pattern can enhance user's experience on controling over the process and expressing their preference.
 
-## Paper
-Low Code LLM [Coming Soon]
+## Video Demo
 
-## Codes and System
-In progress, coming in a very near future...
+https://github.com/microsoft/TaskMatrix/blob/main/assets/low-code-demovideo.mp4
 
+(This is a conceptual video demo to demonstrate the complete process)
+
+## Quick Start
+Please note that due to time constraints, the code we provide is only the minimum viable version of the low-code LLM interactive code, i.e. only demonstrating the core concept of Low-code LLM human-LLM interaction. We welcome anyone who is interested in improving our front-end interface.
+```
+# clone the repo
+git clone https://github.com/microsoft/TaskMatrix.git
+
+# go to directlory
+cd LowCodeLLM
+
+# build and run docker
+docker build -t lowcode:latest .
+docker run -p 8888:8888 --env OPENAIKEY={Your_Private_Openai_Key} lowcode:latest
+
+# Open the webpage (./src/index.html)
+```
+
+## System Overview
+
+<img src="https://github.com/microsoft/TaskMatrix/blob/main/assets/low-code-llm.png" alt="overview" width="800"/>
+
+As shown in the above figure, human-LLM interaction can be completed by:
+- A Planning LLM that generates a highly structured workflow for complex tasks.
+- Users editing the workflow with predefined low-code operations, which are all supported by clicking, dragging, or text editing. 
+- An Executing LLM that generates responses with the reviewed workflow. 
+- Users continuing to refine the workflow until satisfactory results are obtained.
+
+## Six Kinds of Pre-defined Low-code Operations
+<img src="https://github.com/microsoft/TaskMatrix/blob/main/assets/low-code-operation.png" alt="operations" width="800"/>
+
+## Advantages
+
+- **Controllable Generation.** Complicated tasks are decomposed into structured conducting plans and presented to users as workflows. Users can control the LLMs’ execution through low-code operations to achieve more controllable responses. The responses generated followed the customized workflow will be more aligned with the user’s requirements.
+- **Friendly Interaction.** The intuitive workflow enables users to swiftly comprehend the LLMs' execution logic, and the low-code operation through a graphical user interface empowers users to conveniently modify the workflow in a user-friendly manner. In this way, time-consuming prompt engineering is mitigated, allowing users to efficiently implement their ideas into detailed instructions to achieve high-quality results.
+- **Wide applicability.** The proposed framework can be applied to a wide range of complex tasks across various domains, especially in situations where human's intelligence or preference are indispensable.
+
+
+## Acknowledgement
+Part of this paper has been collaboratively crafted through interactions with the proposed Low-code LLM. The process began with GPT-4 outlining the framework, followed by the authors supplementing it with innovative ideas and refining the structure of the workflow. Ultimately, GPT-4 took charge of generating cohesive and compelling text.
