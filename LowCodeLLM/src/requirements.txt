@@ -1,0 +1,5 @@
+Flask==2.2.3
+Flask_Cors==3.0.10
+openai==0.27.2
+gunicorn==20.1.0
+gevent==21.8.0
