@@ -1,0 +1,5 @@
+USE_AZURE=True
+OPENAIKEY=your-azure-openai-service-key
+API_BASE=your-base-url-for-azure
+API_VERSION=2023-03-15-preview
+MODEL=your-gpt-deployment-name

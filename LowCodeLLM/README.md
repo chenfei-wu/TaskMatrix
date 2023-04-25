@@ -13,6 +13,8 @@ https://user-images.githubusercontent.com/43716920/233937121-cd057f04-dec8-45b8-
 
 ## Quick Start
 Please note that due to time constraints, the code we provide is only the minimum viable version of the low-code LLM interactive code, i.e. only demonstrating the core concept of Low-code LLM human-LLM interaction. We welcome anyone who is interested in improving our front-end interface.
+Currently, both the `OpenAI API` and `Azure OpenAI Service` are supported. You would be required to provide the requisite information to invoke these APIs.
+
 ```
 # clone the repo
 git clone https://github.com/microsoft/TaskMatrix.git
@@ -22,10 +24,16 @@ cd LowCodeLLM
 
 # build and run docker
 docker build -t lowcode:latest .
+
+# If OpenAI API is being used, it is only necessary to provide the API key.
 docker run -p 8888:8888 --env OPENAIKEY={Your_Private_Openai_Key} lowcode:latest
 
-# Open the webpage (./src/index.html)
+# When using Azure OpenAI Service, it is advisable to store the necessary information in a configuration file for ease of access.
+# Kindly duplicate the config.template file and name the copied file as config.ini. Then, fill out the necessary information in the config.ini file.
+docker run -p 8888:8888 --env-file config.ini lowcode:latest
 ```
+You can now try it by visiting [Demo page](http://localhost:8888/)
+
 
 ## System Overview
 
