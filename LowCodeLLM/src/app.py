@@ -1,11 +1,11 @@
 import os
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS, cross_origin
 from lowCodeLLM import lowCodeLLM
 from flask.logging import default_handler
 import logging
 
-app = Flask('lowcode-llm', static_url_path='', template_folder='')
+app = Flask('lowcode-llm', static_folder='', template_folder='')
 app.debug = True
 llm = lowCodeLLM()
 gunicorn_logger = logging.getLogger('gunicorn.error')
@@ -13,6 +13,10 @@ app.logger = gunicorn_logger
 logging_format = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
 default_handler.setFormatter(logging_format)
+
+@app.route("/")
+def index():
+    return send_from_directory(".", "index.html")
 
 @app.route('/api/get_workflow', methods=['POST'])
 @cross_origin()
