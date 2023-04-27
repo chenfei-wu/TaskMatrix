@@ -49,23 +49,15 @@ By leveraging **both general and deep knowledge**, we aim at building an AI that
 
 ## Quick Start
 
-```
+```sh
 # clone the repo
 git clone https://github.com/microsoft/TaskMatrix.git
 
 # Go to directory
-cd visual-chatgpt
+cd TaskMatrix
 
-# create a new environment
-conda create -n visgpt python=3.8
-
-# activate the new environment
-conda activate visgpt
-
-#  prepare the basic environments
-pip install -r requirements.txt
-pip install  git+https://github.com/IDEA-Research/GroundingDINO.git
-pip install  git+https://github.com/facebookresearch/segment-anything.git
+# install requirements
+poetry install
 
 # prepare your private OpenAI key (for Linux)
 export OPENAI_API_KEY={Your_Private_Openai_Key}
@@ -82,13 +74,13 @@ set OPENAI_API_KEY={Your_Private_Openai_Key}
 # You can use: "ImageCaptioning_cpu,Text2Image_cuda:0"
 
 # Advice for CPU Users
-python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
+poetry run python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
 
 # Advice for 1 Tesla T4 15GB  (Google Colab)                       
-python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
+poetry run python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
                                 
 # Advice for 4 Tesla V100 32GB                            
-python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,
+poetry run python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,
     Inpainting_cuda:0,ImageCaptioning_cuda:0,
     Text2Image_cuda:1,Image2Canny_cpu,CannyText2Image_cuda:1,
     Image2Depth_cpu,DepthText2Image_cuda:1,VisualQuestionAnswering_cuda:2,
