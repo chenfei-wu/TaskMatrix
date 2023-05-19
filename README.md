@@ -67,8 +67,8 @@ pip install -r requirements.txt
 pip install  git+https://github.com/IDEA-Research/GroundingDINO.git
 pip install  git+https://github.com/facebookresearch/segment-anything.git
 
-# prepare your private OpenAI key (for Linux)
-export OPENAI_API_KEY={Your_Private_Openai_Key}
+# prepare your private OpenAI key (for Linux and macOS)
+export OPENAI_API_KEY={Your_Private_Openai_Key} # do not include {}
 
 # prepare your private OpenAI key (for Windows)
 set OPENAI_API_KEY={Your_Private_Openai_Key}
