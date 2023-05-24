@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import os
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS, cross_origin
