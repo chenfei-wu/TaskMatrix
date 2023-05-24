@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 from openAIWrapper import OpenAIWrapper
 
 EXECUTING_LLM_PREFIX = """Executing LLM is designed to provide outstanding responses.
