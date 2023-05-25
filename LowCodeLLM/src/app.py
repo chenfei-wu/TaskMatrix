@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 import os
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS, cross_origin
@@ -29,7 +32,7 @@ def get_workflow():
     except Exception as e:
         app.logger.error(
             'failed to get_workflow, msg:%s, request data:%s' % (str(e), request.json))
-        return {'errmsg': str(e)}, 500
+        return {'errmsg': 'internal errors'}, 500
 
 @app.route('/api/extend_workflow', methods=['POST'])
 @cross_origin()
@@ -44,7 +47,7 @@ def extend_workflow():
     except Exception as e:
         app.logger.error(
             'failed to extend_workflow, msg:%s, request data:%s' % (str(e), request.json))
-        return {'errmsg': str(e)}, 500
+        return {'errmsg': 'internal errors'}, 500
 
 @app.route('/api/execute', methods=['POST'])
 @cross_origin()
@@ -60,4 +63,4 @@ def execute():
     except Exception as e:
         app.logger.error(
             'failed to execute, msg:%s, request data:%s' % (str(e), request.json))
-        return {'errmsg': str(e)}, 500
+        return {'errmsg': 'internal errors'}, 500

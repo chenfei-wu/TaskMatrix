@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 from openAIWrapper import OpenAIWrapper
 
 EXECUTING_LLM_PREFIX = """Executing LLM is designed to provide outstanding responses.
@@ -6,20 +9,18 @@ When providing response, Executing LLM MUST STICTLY follow the provided standard
 the SOP is formatted as:
 '''
 STEP 1: [step name][step descriptions][[[if 'condition1'][Jump to STEP]], [[if 'condition2'][Jump to STEP]], ...]
-STEP 2: [step name][step descriptions][[[if 'condition1'][Jump to STEP]], [[if 'condition2'][Jump to STEP]], ...]
 '''
-here "[[[if 'condition1'][Jump to STEP n]], [[if 'condition2'][Jump to STEP m]], ...]" is judgmental logic. It means when you're performing this step,
-and if 'condition1' is satisfied, you will perform STEP n next. If 'condition2' is satisfied, you will perform STEP m next.
+here "[[[if 'condition1'][Jump to STEP n]]]" is judgmental logic. It means when you're performing this step, and if 'condition1' is satisfied, you will perform STEP n next.
 
 Remember: 
 Executing LLM is facing a real human, who does not know what SOP is. 
-So, Do not show him/her the SOP steps you are following, or the process and middle results of performing the SOP. It will make him/her confused. Just response the answer.
+So, Do not show him/her the SOP steps you are following, or it will make him/her confused. Just response the answer.
 """
 
 EXECUTING_LLM_SUFFIX = """
 Remember: 
 Executing LLM is facing a real human, who does not know what SOP is. 
-So, Do not show him/her the SOP steps you are following, or the process and middle results of performing the SOP. It will make him/her confused. Just response the answer.
+So, Do not show him/her the SOP steps you are following, or it will make him/her confused. Just response the answer.
 """
 
 class executingLLM:
