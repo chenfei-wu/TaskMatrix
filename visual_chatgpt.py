@@ -362,8 +362,6 @@ class CannyText2Image:
                          "The input to this tool should be a comma separated string of two, "
                          "representing the image_path and the user description. ")
     def inference(self, inputs):
-        # 输入的 Inputs 文本，并不是用户原始输入的内容。而是通过 ConversationBot 的 Agent，经过“思考”之后拿到的 Action Inputs。
-        # 这个 Inputs 里面，既会包含需要处理的图片路径，也会包含对应的 Prompts。
         image_path, instruct_text = inputs.split(",")[0], ','.join(inputs.split(',')[1:])
         image = Image.open(image_path)
         self.seed = random.randint(0, 65535)
@@ -1461,31 +1459,43 @@ class BackgroundRemoving:
         return mask
 
 class SearchAssist:
-    def __init__(self,inputs):
-        self.inputs=inputs  
+    def __init__(self, device):
+        print(f"Initializing SearchAssist to {device}")
+        self.device = device
+    # def __init__(self,inputs):
+    #     self.inputs=inputs  
     @prompts(name="Search Order",
             description="useful for when you need to answer questions about customers orders")
-    def inference_search_order(self,inputs):
-        return "订单状态:已发货;发货日期:2023-01-01;预计送达时间:2023-01-10"
+    def inference(self,inputs):
+        return "订单状态;已发货;发货日期;2023-01-01;预计送达时间:2023-01-10"
 
          
               
 class RecommandProduct:
-    def __init__(self,inputs):
-        self.inputs=inputs
+    def __init__(self, device):
+        print(f"Initializing RecommandProduct to {device}")
+        self.device = device
+
+    # def __init__(self,inputs):
+    #     self.inputs=inputs
+
     @prompts(name="Recommend Product",
             description="useful for when you need to answer questions about product recommendations")
-    def inference_recommend_product(self, inputs):
+    def inference(self, inputs):
           return "收钱吧扫码王"
 
-class FAQ:
-    def __init__(self,inputs):
-        self.inputs=inputs
-
+class FQA:
+    def __init__(self, device):
+        print(f"Initializing SearchAssist to {device}")
+        self.device = device
+    # def __init__(self,inputs):
+    #     self.inputs=inputs
     @prompts(name="FAQ",
             description="useful for when you need to answer questions about shopping policies, like return policy, shipping policy, etc.s")
-    def inference_faq(self, inputs):
+    def inference(self, inputs):
           return "七天无理由退换货"
+
+         
 
 
 class ConversationBot:
@@ -1514,12 +1524,9 @@ class ConversationBot:
         self.tools = []
         for instance in self.models.values():
             for e in dir(instance):
-                # 遍历所有的class,找到里面以inference开头的函数,
                 if e.startswith('inference'):
                     func = getattr(instance, e)
-                    # 每个函数都会被当作一个LangChain里面的Tool,放到当前实例的Tools数组中
                     self.tools.append(Tool(name=func.name, description=func.description, func=func))
-        # 设置llm ,openAI,memory 为chat_history
         self.llm = OpenAI(temperature=0)
         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 
@@ -1533,7 +1540,6 @@ class ConversationBot:
             PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_CN, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN, VISUAL_CHATGPT_SUFFIX_CN
             place = "输入文字并回车，或者上传图片"
             label_clear = "清除"
-        # 创建agent,使用conversational-react-description;为会话设置而设计的代理, 它的prompt会被设计的具有会话性, 且还是会使用 ReAct框架来决定使用来个工具, 并且将过往的会话交互存入内存.
         self.agent = initialize_agent(
             self.tools,
             self.llm,
@@ -1546,9 +1552,7 @@ class ConversationBot:
         return gr.update(visible = True), gr.update(visible = False), gr.update(placeholder=place), gr.update(value=label_clear)
 
     def run_text(self, text, state):
-        # 确保 Memory 不要超出我们设置的上下文长度的限制,这里是500
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
-        # 调用 Agent 来应对用户输入的文本,input、output是输入输出的占位符标志
         res = self.agent({"input": text.strip()})
         res['output'] = res['output'].replace("\\", "/")
         response = re.sub('(image/[-\w]*.png)', lambda m: f'![](file={m.group(0)})*{m.group(0)}*', res['output'])
@@ -1566,12 +1570,10 @@ class ConversationBot:
         width_new, height_new = (round(width * ratio), round(height * ratio))
         width_new = int(np.round(width_new / 64.0)) * 64
         height_new = int(np.round(height_new / 64.0)) * 64
-        # resize 图片的大小尺寸
         img = img.resize((width_new, height_new))
         img = img.convert('RGB')
         img.save(image_filename, "PNG")
         print(f"Resize image form {width}x{height} to {width_new}x{height_new}")
-        # 调用ImageCaptioning 这个模型拿到图片的描述
         description = self.models['ImageCaptioning'].inference(image_filename)
         if lang == 'Chinese':
             Human_prompt = f'\nHuman: 提供一张名为 {image_filename}的图片。它的描述是: {description}。 这些信息帮助你理解这个图像，但是你应该使用工具来完成下面的任务，而不是直接从我的描述中想象。 如果你明白了, 说 \"收到\". \n'
@@ -1579,7 +1581,6 @@ class ConversationBot:
         else:
             Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
             AI_prompt = "Received.  "
-        # 模型将图片名称和描述等信息也作为一轮对话拼接到 Agent 的 memory 里面去
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
         state = state + [(f"![](file={image_filename})*{image_filename}*", AI_prompt)]
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
