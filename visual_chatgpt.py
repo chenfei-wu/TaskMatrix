@@ -1460,7 +1460,7 @@ class BackgroundRemoving:
 
         return mask
 
-class search_assist:
+class SearchAssist:
     def __init__(self,inputs):
         self.inputs=inputs  
     @prompts(name="Search Order",
@@ -1470,7 +1470,7 @@ class search_assist:
 
          
               
-class recommand_product:
+class RecommandProduct:
     def __init__(self,inputs):
         self.inputs=inputs
     @prompts(name="Recommend Product",
@@ -1478,7 +1478,7 @@ class recommand_product:
     def inference_recommend_product(self, inputs):
           return "收钱吧扫码王"
 
-class faq:
+class FAQ:
     def __init__(self,inputs):
         self.inputs=inputs
 
