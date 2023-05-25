@@ -1460,6 +1460,33 @@ class BackgroundRemoving:
 
         return mask
 
+class search_assist:
+    def __init__(self,inputs):
+        self.inputs=inputs  
+    @prompts(name="Search Order",
+            description="useful for when you need to answer questions about customers orders")
+    def inference_search_order(self,inputs):
+        return "订单状态：已发货；发货日期：2023-01-01；预计送达时间：2023-01-10"
+
+         
+              
+class recommand_product:
+    def __init__(self,inputs):
+        self.inputs=inputs
+    @prompts(name="Recommend Product",
+            description="useful for when you need to answer questions about product recommendations")
+    def inference_recommend_product(self, inputs):
+          return "收钱吧扫码王"
+
+class recommand_product:
+    def __init__(self,inputs):
+        self.inputs=inputs
+
+    @prompts(name="FAQ",
+            description="useful for when you need to answer questions about product recommendations")
+    def inference_faq(self, inputs):
+          return "七天无理由退换货"
+
 
 class ConversationBot:
     def __init__(self, load_dict):
