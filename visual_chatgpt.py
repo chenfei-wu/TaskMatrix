@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # coding: utf-8
 import os
 import gradio as gr
@@ -806,21 +809,42 @@ class Segmenting:
         self.sam = build_sam(checkpoint=self.model_checkpoint_path).to(device)
         self.sam_predictor = SamPredictor(self.sam)
         self.mask_generator = SamAutomaticMaskGenerator(self.sam)
+        
+        self.saved_points = []
+        self.saved_labels = []
 
     def download_parameters(self):
         url = "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth"
         if not os.path.exists(self.model_checkpoint_path):
             wget.download(url,out=self.model_checkpoint_path)
 
-    def show_mask(self, mask, ax, random_color=False):
-        if random_color:
-            color = np.concatenate([np.random.random(3), np.array([1])], axis=0)
-        else:
-            color = np.array([30/255, 144/255, 255/255, 1])
-        h, w = mask.shape[-2:]
-        mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
-        ax.imshow(mask_image)
         
+    def show_mask(self, mask: np.ndarray,image: np.ndarray,
+                random_color: bool = False, transparency=1) -> np.ndarray:
+        
+        """Visualize a mask on top of an image.
+        Args:
+            mask (np.ndarray): A 2D array of shape (H, W).
+            image (np.ndarray): A 3D array of shape (H, W, 3).
+            random_color (bool): Whether to use a random color for the mask.
+        Outputs:
+            np.ndarray: A 3D array of shape (H, W, 3) with the mask
+            visualized on top of the image.
+            transparenccy: the transparency of the segmentation mask
+        """
+        
+        if random_color:
+            color = np.concatenate([np.random.random(3)], axis=0)
+        else:
+            color = np.array([30 / 255, 144 / 255, 255 / 255])
+        h, w = mask.shape[-2:]
+        mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1) * 255
+
+        image = cv2.addWeighted(image, 0.7, mask_image.astype('uint8'), transparency, 0)
+
+
+        return image
+
     def show_box(self, box, ax, label):
         x0, y0 = box[0], box[1]
         w, h = box[2] - box[0], box[3] - box[1]
@@ -855,21 +879,112 @@ class Segmenting:
         self.sam_predictor.set_image(image)
 
         masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
-        
+
         # draw output image
-        plt.figure(figsize=(10, 10))
-        plt.imshow(image)
+
         for mask in masks:
-            self.show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
+            image = self.show_mask(mask[0].cpu().numpy(), image, random_color=True, transparency=0.3)
 
         updated_image_path = get_new_image_name(image_path, func_name="segmentation")
-        plt.axis('off')
-        plt.savefig(
-            updated_image_path, 
-            bbox_inches="tight", dpi=300, pad_inches=0.0
-        )
+        
+        new_image = Image.fromarray(image)
+        new_image.save(updated_image_path)
+
         return updated_image_path
 
+    def set_image(self, img) -> None:
+        """Set the image for the predictor."""
+        with torch.cuda.amp.autocast():
+            self.sam_predictor.set_image(img)
+
+    def show_points(self, coords: np.ndarray, labels: np.ndarray,
+                image: np.ndarray) -> np.ndarray:
+        """Visualize points on top of an image.
+
+        Args:
+            coords (np.ndarray): A 2D array of shape (N, 2).
+            labels (np.ndarray): A 1D array of shape (N,).
+            image (np.ndarray): A 3D array of shape (H, W, 3).
+        Returns:
+            np.ndarray: A 3D array of shape (H, W, 3) with the points
+            visualized on top of the image.
+        """
+        pos_points = coords[labels == 1]
+        neg_points = coords[labels == 0]
+        for p in pos_points:
+            image = cv2.circle(
+                image, p.astype(int), radius=3, color=(0, 255, 0), thickness=-1)
+        for p in neg_points:
+            image = cv2.circle(
+                image, p.astype(int), radius=3, color=(255, 0, 0), thickness=-1)
+        return image
+
+
+    def segment_image_with_click(self, img, is_positive: bool,
+                            evt: gr.SelectData):
+                            
+        self.sam_predictor.set_image(img)
+        self.saved_points.append([evt.index[0], evt.index[1]])
+        self.saved_labels.append(1 if is_positive else 0)
+        input_point = np.array(self.saved_points)
+        input_label = np.array(self.saved_labels)
+        
+        # Predict the mask
+        with torch.cuda.amp.autocast():
+            masks, scores, logits = self.sam_predictor.predict(
+                point_coords=input_point,
+                point_labels=input_label,
+                multimask_output=False,
+            )
+
+        img = self.show_mask(masks[0], img, random_color=False, transparency=0.3)
+
+        img = self.show_points(input_point, input_label, img)
+
+        return img
+
+    def segment_image_with_coordinate(self, img, is_positive: bool,
+                            coordinate: tuple):
+        '''
+            Args:
+                img (numpy.ndarray): the given image, shape: H x W x 3.
+                is_positive: whether the click is positive, if want to add mask use True else False.
+                coordinate: the position of the click
+                          If the position is (x,y), means click at the x-th column and y-th row of the pixel matrix.
+                          So x correspond to W, and y correspond to H.
+            Output:
+                img (PLI.Image.Image): the result image
+                result_mask (numpy.ndarray): the result mask, shape: H x W
+
+            Other parameters:
+                transparency (float): the transparenccy of the mask
+                                      to control he degree of transparency after the mask is superimposed.
+                                      if transparency=1, then the masked part will be completely replaced with other colors.
+        '''
+        self.sam_predictor.set_image(img)
+        self.saved_points.append([coordinate[0], coordinate[1]])
+        self.saved_labels.append(1 if is_positive else 0)
+        input_point = np.array(self.saved_points)
+        input_label = np.array(self.saved_labels)
+
+        # Predict the mask
+        with torch.cuda.amp.autocast():
+            masks, scores, logits = self.sam_predictor.predict(
+                point_coords=input_point,
+                point_labels=input_label,
+                multimask_output=False,
+            )
+
+
+        img = self.show_mask(masks[0], img, random_color=False, transparency=0.3)
+
+        img = self.show_points(input_point, input_label, img)
+
+        img = Image.fromarray(img)
+        
+        result_mask = masks[0]
+
+        return img, result_mask
 
     @prompts(name="Segment the Image",
              description="useful when you want to segment all the part of the image, but not segment a certain object."
@@ -1163,12 +1278,14 @@ class InfinityOutPainting:
         return updated_image_path
 
 
+
 class ObjectSegmenting:
     template_model = True # Add this line to show this is a template model.
     def __init__(self,  Text2Box:Text2Box, Segmenting:Segmenting):
         # self.llm = OpenAI(temperature=0)
         self.grounding = Text2Box
         self.sam = Segmenting
+
 
     @prompts(name="Segment the given object",
             description="useful when you only want to segment the certain objects in the picture"
@@ -1181,12 +1298,59 @@ class ObjectSegmenting:
         image_path, det_prompt = inputs.split(",")
         print(f"image_path={image_path}, text_prompt={det_prompt}")
         image_pil, image = self.grounding.load_image(image_path)
+
         boxes_filt, pred_phrases = self.grounding.get_grounding_boxes(image, det_prompt)
         updated_image_path = self.sam.segment_image_with_boxes(image_pil,image_path,boxes_filt,pred_phrases)
         print(
             f"\nProcessed ObejectSegmenting, Input Image: {image_path}, Object to be Segment {det_prompt}, "
             f"Output Image: {updated_image_path}")
         return updated_image_path
+
+    def merge_masks(self, masks):
+        '''
+            Args:
+                mask (numpy.ndarray): shape N x 1 x H x W
+            Outputs:
+                new_mask (numpy.ndarray): shape H x W       
+        '''
+        if type(masks) == torch.Tensor:
+            x = masks
+        elif type(masks) == np.ndarray:
+            x = torch.tensor(masks,dtype=int)
+        else:   
+            raise TypeError("the type of the input masks must be numpy.ndarray or torch.tensor")
+        x = x.squeeze(dim=1)
+        value, _ = x.max(dim=0)
+        new_mask = value.cpu().numpy()
+        new_mask.astype(np.uint8)
+        return new_mask
+    
+    def get_mask(self, image_path, text_prompt):
+
+        print(f"image_path={image_path}, text_prompt={text_prompt}")
+        # image_pil (PIL.Image.Image) -> size: W x H
+        # image (numpy.ndarray) -> H x W x 3
+        image_pil, image = self.grounding.load_image(image_path)
+
+        boxes_filt, pred_phrases = self.grounding.get_grounding_boxes(image, text_prompt)
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        self.sam.sam_predictor.set_image(image)
+        
+        # masks (torch.tensor) -> N x 1 x H x W 
+        masks = self.sam.get_mask_with_boxes(image_pil, image, boxes_filt)
+
+        # merged_mask -> H x W
+        merged_mask = self.merge_masks(masks)
+        # draw output image
+
+        for mask in masks:
+            image = self.sam.show_mask(mask[0].cpu().numpy(), image, random_color=True, transparency=0.3)
+
+
+        merged_mask_image = Image.fromarray(merged_mask)
+
+        return merged_mask
 
 
 class ImageEditing:
@@ -1249,6 +1413,52 @@ class ImageEditing:
             f"\nProcessed ImageEditing, Input Image: {image_path}, Replace {to_be_replaced_txt} to {replace_with_txt}, "
             f"Output Image: {updated_image_path}")
         return updated_image_path
+
+class BackgroundRemoving:
+    '''
+        using to remove the background of the given picture
+    '''
+    template_model = True
+    def __init__(self,VisualQuestionAnswering:VisualQuestionAnswering, Text2Box:Text2Box, Segmenting:Segmenting):
+        self.vqa = VisualQuestionAnswering
+        self.obj_segmenting = ObjectSegmenting(Text2Box,Segmenting)
+
+    @prompts(name="Remove the background",
+             description="useful when you want to extract the object or remove the background,"
+                         "the input should be a string image_path"
+                                )
+    def inference(self, image_path):
+        '''
+            given a image, return the picture only contains the extracted main object
+        '''
+        updated_image_path = None
+
+        mask = self.get_mask(image_path)
+
+        image = Image.open(image_path)
+        mask = Image.fromarray(mask)
+        image.putalpha(mask)
+
+        updated_image_path = get_new_image_name(image_path, func_name="detect-something")
+        image.save(updated_image_path)
+
+        return updated_image_path
+
+    def get_mask(self, image_path):
+        '''
+            Description:
+                given an image path, return the mask of the main object.
+            Args:
+                image_path (string): the file path of the image
+            Outputs:
+                mask (numpy.ndarray): H x W
+        '''
+        vqa_input = f"{image_path}, what is the main object in the image?"
+        text_prompt = self.vqa.inference(vqa_input)
+
+        mask = self.obj_segmenting.get_mask(image_path,text_prompt)
+
+        return mask
 
 
 class ConversationBot:
@@ -1378,4 +1588,4 @@ if __name__ == '__main__':
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(server_name="0.0.0.0", server_port=7861)

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 from planningLLM import planningLLM
 from executingLLM import executingLLM
 import json
