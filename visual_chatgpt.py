@@ -1460,7 +1460,7 @@ class BackgroundRemoving:
 
         return mask
 
-class search_assist:
+class SearchAssist:
     def __init__(self,inputs):
         self.inputs=inputs  
     @prompts(name="Search Order",
@@ -1470,7 +1470,7 @@ class search_assist:
 
          
               
-class recommand_product:
+class RecommandProduct:
     def __init__(self,inputs):
         self.inputs=inputs
     @prompts(name="Recommend Product",
@@ -1478,7 +1478,7 @@ class recommand_product:
     def inference_recommend_product(self, inputs):
           return "收钱吧扫码王"
 
-class faq:
+class FAQ:
     def __init__(self,inputs):
         self.inputs=inputs
 
@@ -1514,12 +1514,12 @@ class ConversationBot:
         self.tools = []
         for instance in self.models.values():
             for e in dir(instance):
-                # 遍历所有的class，找到里面以inference开头的函数，
+                # 遍历所有的class,找到里面以inference开头的函数,
                 if e.startswith('inference'):
                     func = getattr(instance, e)
                     # 每个函数都会被当作一个LangChain里面的Tool,放到当前实例的Tools数组中
                     self.tools.append(Tool(name=func.name, description=func.description, func=func))
-        # 设置llm ，openAI,memory 为chat_history
+        # 设置llm ,openAI,memory 为chat_history
         self.llm = OpenAI(temperature=0)
         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 
@@ -1533,7 +1533,7 @@ class ConversationBot:
             PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_CN, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN, VISUAL_CHATGPT_SUFFIX_CN
             place = "输入文字并回车，或者上传图片"
             label_clear = "清除"
-        # 创建agent,使用conversational-react-description；为会话设置而设计的代理, 它的prompt会被设计的具有会话性, 且还是会使用 ReAct框架来决定使用来个工具, 并且将过往的会话交互存入内存.
+        # 创建agent,使用conversational-react-description;为会话设置而设计的代理, 它的prompt会被设计的具有会话性, 且还是会使用 ReAct框架来决定使用来个工具, 并且将过往的会话交互存入内存.
         self.agent = initialize_agent(
             self.tools,
             self.llm,
@@ -1546,9 +1546,9 @@ class ConversationBot:
         return gr.update(visible = True), gr.update(visible = False), gr.update(placeholder=place), gr.update(value=label_clear)
 
     def run_text(self, text, state):
-        # 确保 Memory 不要超出我们设置的上下文长度的限制，这里是500
+        # 确保 Memory 不要超出我们设置的上下文长度的限制,这里是500
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
-        # 调用 Agent 来应对用户输入的文本，input、output是输入输出的占位符标志
+        # 调用 Agent 来应对用户输入的文本,input、output是输入输出的占位符标志
         res = self.agent({"input": text.strip()})
         res['output'] = res['output'].replace("\\", "/")
         response = re.sub('(image/[-\w]*.png)', lambda m: f'![](file={m.group(0)})*{m.group(0)}*', res['output'])
