@@ -54,10 +54,11 @@ By leveraging **both general and deep knowledge**, we aim at building an AI that
 git clone https://github.com/microsoft/TaskMatrix.git
 
 # Go to directory
-cd visual-chatgpt
+cd TaskMatrix
 
 # create a new environment
 conda create -n visgpt python=3.8
+**Note:** If you don't have the `conda` command, you can download [miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
 # activate the new environment
 conda activate visgpt
