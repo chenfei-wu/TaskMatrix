@@ -1548,8 +1548,8 @@ class ConversationBot:
             label_clear = "נקה"
         else:
             PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_CN, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN, VISUAL_CHATGPT_SUFFIX_CN
-        place = "输入文字并回车，或者上传图片"
-        label_clear = "清除"
+            place = "输入文字并回车，或者上传图片"
+            label_clear = "清除"
 
         self.agent = initialize_agent(
             self.tools,
