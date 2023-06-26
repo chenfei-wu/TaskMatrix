@@ -13,7 +13,7 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
 </a>
 
 ## Updates:
-- Now TaskMatrix supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
+- Now TaskMatrix supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and the masked area will be filled by an inpainting model. 
     - Firstly, run `python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,Inpainting_cuda:0,ImageCaptioning_cuda:0"`
     - Then, say `find xxx in the image` or `segment xxx in the image`. `xxx` is an object. TaskMatrix will return the detection or segmentation result!
 
@@ -130,8 +130,7 @@ Here we list the GPU memory usage of each visual foundation model, you can speci
 We appreciate the open source of the following projects:
 
 [Hugging Face](https://github.com/huggingface) &#8194;
-[LangChain](https://github.com/hwchase17/langchain) &#8194;
-[Stable Diffusion](https://github.com/CompVis/stable-diffusion) &#8194; 
+[LangChain](https://github.com/hwchase17/langchain) &#8194; 
 [ControlNet](https://github.com/lllyasviel/ControlNet) &#8194; 
 [InstructPix2Pix](https://github.com/timothybrooks/instruct-pix2pix) &#8194; 
 [CLIPSeg](https://github.com/timojl/clipseg) &#8194;
