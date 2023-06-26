@@ -30,7 +30,6 @@ from langchain.agents.initialize import initialize_agent
 from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
-from langchain.llms import cohere
 
 # Grounding DINO
 import groundingdino.datasets.transforms as T
@@ -1226,7 +1225,7 @@ class InfinityOutPainting:
     template_model = True  # Add this line to show this is a template model.
 
     def __init__(self, ImageCaptioning, Inpainting, VisualQuestionAnswering):
-        self.llm = cohere
+        self.llm = OpenAI(temperature=0)
         self.ImageCaption = ImageCaptioning
         self.inpaint = Inpainting
         self.ImageVQA = VisualQuestionAnswering
@@ -1325,7 +1324,7 @@ class ObjectSegmenting:
     template_model = True  # Add this line to show this is a template model.
 
     def __init__(self, Text2Box: Text2Box, Segmenting: Segmenting):
-        # self.llm = cohere
+        # self.llm = OpenAI(temperature=0)
         self.grounding = Text2Box
         self.sam = Segmenting
 
@@ -1534,7 +1533,7 @@ class ConversationBot:
                 if e.startswith('inference'):
                     func = getattr(instance, e)
                     self.tools.append(Tool(name=func.name, description=func.description, func=func))
-        self.llm = cohere
+        self.llm = OpenAI(temperature=0)
         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 
     def init_agent(self, lang):
