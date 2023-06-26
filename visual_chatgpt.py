@@ -1590,12 +1590,13 @@ class ConversationBot:
         if lang == 'Chinese':
             Human_prompt = f'\nHuman: 提供一张名为 {image_filename}的图片。它的描述是: {description}。 这些信息帮助你理解这个图像，但是你应该使用工具来完成下面的任务，而不是直接从我的描述中想象。 如果你明白了, 说 \"收到\". \n'
             AI_prompt = "收到。  "
-        elif lang == 'Hebrew':
-            Human_prompt = f'\nHuman: ספק תמונה בשם {image_filename}. התיאור הוא: {description}.מידע זה עוזר לך להבין את התמונה, אך עליך להשתמש בכלים כדי לסיים את המשימות הבאות, במקום לדמיין ישירות מהתיאור שסיפקתי. אם אתה מבין תגיד \"קיבלתי"\ . \n'
-            AI_prompt = "קיבלתי.  "
         else:
-            Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
-            AI_prompt = "Received.  "
+            if lang == 'Hebrew':
+                Human_prompt = f'\nHuman: ספק תמונה בשם {image_filename}. התיאור הוא: {description}.מידע זה עוזר לך להבין את התמונה, אך עליך להשתמש בכלים כדי לסיים את המשימות הבאות, במקום לדמיין ישירות מהתיאור שסיפקתי. אם אתה מבין תגיד \"קיבלתי"\ . \n'
+                AI_prompt = "קיבלתי.  "
+            else:
+                Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
+                AI_prompt = "Received.  "
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
         state = state + [(f"![](file={image_filename})*{image_filename}*", AI_prompt)]
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
