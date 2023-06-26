@@ -1542,14 +1542,14 @@ class ConversationBot:
             PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS, VISUAL_CHATGPT_SUFFIX
             place = "Enter text and press enter, or upload an image"
             label_clear = "Clear"
-        else lang == 'Hebrew':
+        elif lang == 'Hebrew':
             PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_HE, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_HE, VISUAL_CHATGPT_SUFFIX_HE
             place = "הכנס טקסט או העלה תמונה"
             label_clear = "נקה"
-        # else:
-        #    PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_CN, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN, VISUAL_CHATGPT_SUFFIX_CN
-        #place = "输入文字并回车，或者上传图片"
-        #label_clear = "清除"
+        else:
+            PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_CN, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN, VISUAL_CHATGPT_SUFFIX_CN
+        place = "输入文字并回车，或者上传图片"
+        label_clear = "清除"
 
         self.agent = initialize_agent(
             self.tools,
@@ -1612,7 +1612,7 @@ if __name__ == '__main__':
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)
     with gr.Blocks(css="#chatbot .overflow-y-auto{height:500px}") as demo:
-        lang = gr.Radio(choices=['Hebrew', 'Chinese', 'English'], value=None, label='Language')
+        lang = gr.Radio(choices=['Chinese', 'English', 'Hebrew'], value=None, label='Language')
         chatbot = gr.Chatbot(elem_id="chatbot", label="Visual ChatGPT")
         state = gr.State([])
         with gr.Row(visible=False) as input_raws:
