@@ -57,7 +57,7 @@ Overall, Visual ChatGPT is a powerful visual dialogue assistant tool that can he
 TOOLS:
 ------
 
-Visual ChatGPT  has access to the following tools:"""
+Visual ChatGPT has access to the following tools:"""
 
 VISUAL_CHATGPT_FORMAT_INSTRUCTIONS = """To use a tool, please use the following format:
 
