@@ -1461,6 +1461,45 @@ class BackgroundRemoving:
 
         return mask
 
+class SearchAssist:
+    def __init__(self, device):
+        print(f"Initializing SearchAssist to {device}")
+        self.device = device
+    # def __init__(self,inputs):
+    #     self.inputs=inputs  
+    @prompts(name="Search Order",
+            description="useful for when you need to answer questions about customers orders")
+    def inference(self,inputs):
+        return "订单状态;已发货;发货日期;2023-01-01;预计送达时间:2023-01-10"
+
+         
+              
+class RecommandProduct:
+    def __init__(self, device):
+        print(f"Initializing RecommandProduct to {device}")
+        self.device = device
+
+    # def __init__(self,inputs):
+    #     self.inputs=inputs
+
+    @prompts(name="Recommend Product",
+            description="useful for when you need to answer questions about product recommendations")
+    def inference(self, inputs):
+          return "收钱吧扫码王"
+
+class FQA:
+    def __init__(self, device):
+        print(f"Initializing SearchAssist to {device}")
+        self.device = device
+    # def __init__(self,inputs):
+    #     self.inputs=inputs
+    @prompts(name="FAQ",
+            description="useful for when you need to answer questions about shopping policies, like return policy, shipping policy, etc.s")
+    def inference(self, inputs):
+          return "七天无理由退换货"
+
+         
+
 
 class ConversationBot:
     def __init__(self, load_dict):
