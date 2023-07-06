@@ -5,7 +5,7 @@
         "step": "STEP 1"
     },
     {
-        "task_prompt": "Write an bolg about Microsoft.",
+        "task_prompt": "Write an blog about Microsoft.",
         "current_workflow": "[{\"stepId\": \"STEP 1\", \"stepName\": \"Research\", \"stepDescription\": \"Gather information about Microsoft's history, products, and services\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 2\", \"stepName\": \"Analyze\", \"stepDescription\": \"Organize the gathered information into categories and identify key points\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 3\", \"stepName\": \"Outline\", \"stepDescription\": \"Create an outline based on the key points and categories\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 4\", \"stepName\": \"Write\", \"stepDescription\": \"Write a draft of the blog post using the outline as a guide\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 5\", \"stepName\": \"Edit\", \"stepDescription\": \"Review and revise the draft for clarity and accuracy\", \"jumpLogic\": [{\"Condition\": \"need for further editing\", \"Target\": \"STEP 4\"}], \"extension\": []}, {\"stepId\": \"STEP 6\", \"stepName\": \"Publish\", \"stepDescription\": \"Post the final version of the blog post on a suitable platform\", \"jumpLogic\": [], \"extension\": []}]",
         "step": "STEP 2"
     },
