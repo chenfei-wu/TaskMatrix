@@ -54,7 +54,7 @@ By leveraging **both general and deep knowledge**, we aim at building an AI that
 git clone https://github.com/microsoft/TaskMatrix.git
 
 # Go to directory
-cd visual-chatgpt
+cd TaskMatrix
 
 # create a new environment
 conda create -n visgpt python=3.8
@@ -104,7 +104,6 @@ Here we list the GPU memory usage of each visual foundation model, you can speci
 
 | Foundation Model        | GPU Memory (MB) |
 |------------------------|-----------------|
-| ImageEditing           | 3981            |
 | InstructPix2Pix        | 2827            |
 | Text2Image             | 3385            |
 | ImageCaptioning        | 1209            |
@@ -118,7 +117,6 @@ Here we list the GPU memory usage of each visual foundation model, you can speci
 | ScribbleText2Image     | 3531            |
 | Image2Pose             | 0               |
 | PoseText2Image         | 3529            |
-| Image2Seg              | 919             |
 | SegText2Image          | 3529            |
 | Image2Depth            | 0               |
 | DepthText2Image        | 3531            |
