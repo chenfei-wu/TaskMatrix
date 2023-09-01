@@ -2,6 +2,7 @@ langchain==0.0.101
 torch==1.13.1
 torchvision==0.14.1
 wget==3.2
+tdqm
 accelerate
 addict
 albumentations
