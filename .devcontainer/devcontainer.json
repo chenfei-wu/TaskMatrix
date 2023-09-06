@@ -1,25 +1,39 @@
 {
-	"name": "poetry3-poetry-pyenv",
+	"name": "Python 3",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:/home/user/.local/bin"
+	},
+	"postCreateCommand": "poetry config virtualenvs.in-project true && poetry install",
+	"runArgs": ["--gpus","all"],
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": { 
+				"python.defaultInterpreterPath": "/usr/bin/python"
+			},
+			
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-toolsai.jupyter"
+			]
+		}
 	},
 
-	// 👇 Features to add to the Dev Container. More info: https://containers.dev/implementors/features.
-	// "features": {},
-
-	// 👇 Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
-	// 👇 Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "poetry install",
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "pip3 install --user -r requirements.txt",
 
-	// 👇 Configure tool-specific properties.
-	"customizations": {
-        "vscode": {
-            "extensions":["ms-python.python", "njpwerner.autodocstring"]
-            }
-        }
-
-	// 👇 Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "user"
 }

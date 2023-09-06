@@ -1,13 +1,18 @@
-FROM mcr.microsoft.com/devcontainers/base:jammy
-# FROM mcr.microsoft.com/devcontainers/base:jammy 
+FROM nvidia/cuda:11.8.0-base-ubuntu22.04
+RUN apt update && apt install -y --no-install-recommends git ssh python3 python3-pip
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
-ARG DEBIAN_FRONTEND=noninteractive
-ARG USER=vscode
+ARG USER_NAME=user
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
 
-RUN DEBIAN_FRONTEND=noninteractive \
-    && apt-get update \ 
-    && apt-get install -y build-essential --no-install-recommends make \
-        ca-certificates \
+# Create the user
+RUN groupadd --gid $USER_GID $USER_NAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USER_NAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt-get update \
+    && apt-get install -y sudo make \
         git \
         libssl-dev \
         zlib1g-dev \
@@ -18,8 +23,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
         curl \
         llvm \
         libncurses5-dev \
-        xz-utils \
-        tk-dev \
+#        xz-utils \
+#        tk-dev \
         libxml2-dev \
         libxmlsec1-dev \
         libffi-dev \
@@ -29,24 +34,15 @@ RUN DEBIAN_FRONTEND=noninteractive \
         ffmpeg \
         libfontconfig1 \
         libxrender1 \
-        libgl1-mesa-glx
+        libgl1-mesa-glx \
+    && echo $USER_NAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USER_NAME \
+    && chmod 0440 /etc/sudoers.d/$USER_NAME
 
+# ********************************************************
+# * Anything else you want to do like clean up goes here *
+# ********************************************************
 
-# Python and poetry installation
-USER $USER
-ARG HOME="/home/$USER"
-ARG PYTHON_VERSION=3.10
-# ARG PYTHON_VERSION=3.10
+# [Optional] Set the default user. Omit if you want to keep the default as root.
+USER $USER_NAME
 
-ENV PYENV_ROOT="${HOME}/.pyenv"
-ENV PATH="${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${HOME}/.local/bin:$PATH"
-
-RUN echo "done 0" \
-    && curl https://pyenv.run | bash \
-    && echo "done 1" \
-    && pyenv install ${PYTHON_VERSION} \
-    && echo "done 2" \
-    && pyenv global ${PYTHON_VERSION} \
-    && echo "done 3" \
-    && curl -sSL https://install.python-poetry.org | python3 - \
-    && poetry config virtualenvs.in-project true
+RUN curl -sSL https://install.python-poetry.org | /usr/bin/python3 -
