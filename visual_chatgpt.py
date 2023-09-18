@@ -831,7 +831,7 @@ class Segmenting:
         Outputs:
             np.ndarray: A 3D array of shape (H, W, 3) with the mask
             visualized on top of the image.
-            transparenccy: the transparency of the segmentation mask
+            transparency: the transparency of the segmentation mask
         """
         
         if random_color:
@@ -958,7 +958,7 @@ class Segmenting:
                 result_mask (numpy.ndarray): the result mask, shape: H x W
 
             Other parameters:
-                transparency (float): the transparenccy of the mask
+                transparency (float): the transparency of the mask
                                       to control he degree of transparency after the mask is superimposed.
                                       if transparency=1, then the masked part will be completely replaced with other colors.
         '''
@@ -1163,7 +1163,7 @@ class Text2Box:
         updated_image = image_with_box.resize(size)
         updated_image.save(updated_image_path)
         print(
-            f"\nProcessed ObejectDetecting, Input Image: {image_path}, Object to be Detect {det_prompt}, "
+            f"\nProcessed ObjectDetecting, Input Image: {image_path}, Object to be Detect {det_prompt}, "
             f"Output Image: {updated_image_path}")
         return updated_image_path
 
@@ -1292,7 +1292,7 @@ class ObjectSegmenting:
             description="useful when you only want to segment the certain objects in the picture"
                         "according to the given text"  
                         "like: segment the cat,"
-                        "or can you segment an obeject for me"
+                        "or can you segment an object for me"
                         "The input to this tool should be a comma separated string of two, "
                         "representing the image_path, the text description of the object to be found")
     def inference(self, inputs):
@@ -1303,7 +1303,7 @@ class ObjectSegmenting:
         boxes_filt, pred_phrases = self.grounding.get_grounding_boxes(image, det_prompt)
         updated_image_path = self.sam.segment_image_with_boxes(image_pil,image_path,boxes_filt,pred_phrases)
         print(
-            f"\nProcessed ObejectSegmenting, Input Image: {image_path}, Object to be Segment {det_prompt}, "
+            f"\nProcessed ObjectSegmenting, Input Image: {image_path}, Object to be Segment {det_prompt}, "
             f"Output Image: {updated_image_path}")
         return updated_image_path
 

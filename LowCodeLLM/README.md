@@ -4,7 +4,7 @@
 
 See our paper: [Low-code LLM: Visual Programming over LLMs](https://arxiv.org/abs/2304.08103)
 
-In the future, [TaskMatrix.AI](https://arxiv.org/abs/2304.08103) can enhance task automation by breaking down tasks more effectively and utilizing existing foundation models and APIs of other AI models and systems to achieve diversified tasks in both digital and physical domains. And the low-code human-LLM interaction pattern can enhance user's experience on controling over the process and expressing their preference.
+In the future, [TaskMatrix.AI](https://arxiv.org/abs/2304.08103) can enhance task automation by breaking down tasks more effectively and utilizing existing foundation models and APIs of other AI models and systems to achieve diversified tasks in both digital and physical domains. And the low-code human-LLM interaction pattern can enhance user's experience on controlling over the process and expressing their preference.
 
 ## Video Demo
 https://user-images.githubusercontent.com/43716920/233937121-cd057f04-dec8-45b8-9c52-a9e9594eec80.mp4
