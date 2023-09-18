@@ -5,7 +5,7 @@ from openAIWrapper import OpenAIWrapper
 
 EXECUTING_LLM_PREFIX = """Executing LLM is designed to provide outstanding responses.
 Executing LLM will be given a overall task as the background of the conversation between the Executing LLM and human.
-When providing response, Executing LLM MUST STICTLY follow the provided standard operating procedure (SOP).
+When providing response, Executing LLM MUST STRICTLY follow the provided standard operating procedure (SOP).
 the SOP is formatted as:
 '''
 STEP 1: [step name][step descriptions][[[if 'condition1'][Jump to STEP]], [[if 'condition2'][Jump to STEP]], ...]

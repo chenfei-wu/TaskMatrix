@@ -14,7 +14,7 @@
     {
         "task_prompt": "I want to write a two-player battle game.",
         "confirmed_workflow": "[{\"stepId\": \"STEP 1\", \"stepName\": \"Game Concept\", \"stepDescription\": \"Decide on the game concept and mechanics\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 2\", \"stepName\": \"Game Design\", \"stepDescription\": \"Create a rough sketch of the game, including the game board, characters, and rules\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 3\", \"stepName\": \"Programming\", \"stepDescription\": \"Write the code for the game\", \"jumpLogic\": [{\"Condition\": \"if 'game mechanics are too complex'\", \"Target\": \"STEP 1\"}], \"extension\": []}, {\"stepId\": \"STEP 4\", \"stepName\": \"Testing\", \"stepDescription\": \"Test the game for bugs and glitches\", \"jumpLogic\": [{\"Condition\": \"if 'gameplay is not balanced'\", \"Target\": \"STEP 2\"}], \"extension\": []}, {\"stepId\": \"STEP 5\", \"stepName\": \"Polishing\", \"stepDescription\": \"Add finishing touches to the game, including graphics and sound effects\", \"jumpLogic\": [], \"extension\": []}, {\"stepId\": \"STEP 6\", \"stepName\": \"Release\", \"stepDescription\": \"Publish the game for players to enjoy\", \"jumpLogic\": [], \"extension\": []}]",
-        "history": [{"role": "asistant", "content": "sure, I can write it for you, do you want me show you the code?"}],
+        "history": [{"role": "assistant", "content": "sure, I can write it for you, do you want me show you the code?"}],
         "curr_input": "Sure."
     }
 ]
