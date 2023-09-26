@@ -1,6 +1,6 @@
-# Visual ChatGPT 
+# TaskMatrix
 
-**Visual ChatGPT** connects ChatGPT and a series of Visual Foundation Models to enable **sending** and **receiving** images during chatting.
+**TaskMatrix** connects ChatGPT and a series of Visual Foundation Models to enable **sending** and **receiving** images during chatting.
 
 See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with Visual Foundation Models</font>](https://arxiv.org/abs/2303.04671)
 
@@ -8,22 +8,32 @@ See our paper: [<font size=5>Visual ChatGPT: Talking, Drawing and Editing with V
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Open%20in%20Spaces-blue" alt="Open in Spaces">
 </a>
 
-<a src="https://colab.research.google.com/assets/colab-badge.svg" href="https://colab.research.google.com/drive/11BtP3h-w0dZjA-X8JsS9_eo8OeGYvxXB">
+<a src="https://colab.research.google.com/assets/colab-badge.svg" href="https://colab.research.google.com/drive/1P3jJqKEWEaeNcZg8fODbbWeQ3gxOHk2-?usp=sharing">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">
 </a>
 
 ## Updates:
+- Now TaskMatrix supports [GroundingDINO](https://github.com/IDEA-Research/GroundingDINO) and [segment-anything](https://github.com/facebookresearch/segment-anything)! Thanks **@jordddan** for his efforts. For the image editing case, `GroundingDINO` is first used to locate bounding boxes guided by given text, then `segment-anything` is used to generate the related mask, and finally stable diffusion inpainting is used to edit image based on the mask. 
+    - Firstly, run `python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,Inpainting_cuda:0,ImageCaptioning_cuda:0"`
+    - Then, say `find xxx in the image` or `segment xxx in the image`. `xxx` is an object. TaskMatrix will return the detection or segmentation result!
 
-- Add custom GPU/CPU assignment
-- Add windows support
-- Merge HuggingFace ControlNet, Remove download.sh
-- Add Prompt Decorator
-- Add HuggingFace and Colab Demo
-- Clean Requirements
+
+- Now TaskMatrix can support Chinese! Thanks to **@Wang-Xiaodong1899** for his efforts.
+- We propose the **template** idea in TaskMatrix!
+    - A template is a **pre-defined execution flow** that assists ChatGPT in assembling complex tasks involving multiple foundation models. 
+    - A template contains the **experiential solution** to complex tasks as determined by humans. 
+    - A template can **invoke multiple foundation models** or even **establish a new ChatGPT session**
+    - To define a **template**, simply adding a class with attributes `template_model = True`
+- Thanks to **@ShengmingYin** and **@thebestannie** for providing a template example in `InfinityOutPainting` class (see the following gif)
+    - Firstly, run `python visual_chatgpt.py --load "Inpainting_cuda:0,ImageCaptioning_cuda:0,VisualQuestionAnswering_cuda:0"`
+    - Secondly, say `extend the image to 2048x1024` to TaskMatrix!
+    - By simply creating an `InfinityOutPainting` template, TaskMatrix can seamlessly extend images to any size through collaboration with existing `ImageCaptioning`, `Inpainting`, and `VisualQuestionAnswering` foundation models, **without the need for additional training**.
+- **TaskMatrix needs the effort of the community! We crave your contribution to add new and interesting features!**
+<img src="./assets/demo_inf.gif" width="750">
 
 
 ## Insight & Goal:
-One the one hand, **ChatGPT (or LLMs)** serves as a **general interface** that provides a broad and diverse understanding of a
+On the one hand, **ChatGPT (or LLMs)** serves as a **general interface** that provides a broad and diverse understanding of a
 wide range of topics. On the other hand, **Foundation Models** serve as **domain experts** by providing deep knowledge in specific domains.
 By leveraging **both general and deep knowledge**, we aim at building an AI that is capable of handling various tasks.
 
@@ -41,7 +51,7 @@ By leveraging **both general and deep knowledge**, we aim at building an AI that
 
 ```
 # clone the repo
-git clone https://github.com/microsoft/visual-chatgpt.git
+git clone https://github.com/microsoft/TaskMatrix.git
 
 # Go to directory
 cd visual-chatgpt
@@ -54,6 +64,8 @@ conda activate visgpt
 
 #  prepare the basic environments
 pip install -r requirements.txt
+pip install  git+https://github.com/IDEA-Research/GroundingDINO.git
+pip install  git+https://github.com/facebookresearch/segment-anything.git
 
 # prepare your private OpenAI key (for Linux)
 export OPENAI_API_KEY={Your_Private_Openai_Key}
@@ -61,7 +73,7 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 # prepare your private OpenAI key (for Windows)
 set OPENAI_API_KEY={Your_Private_Openai_Key}
 
-# Start Visual ChatGPT !
+# Start TaskMatrix !
 # You can specify the GPU/CPU assignment by "--load", the parameter indicates which 
 # Visual Foundation Model to use and where it will be loaded to
 # The model and device are separated by underline '_', the different models are separated by comma ','
@@ -76,14 +88,15 @@ python visual_chatgpt.py --load ImageCaptioning_cpu,Text2Image_cpu
 python visual_chatgpt.py --load "ImageCaptioning_cuda:0,Text2Image_cuda:0"
                                 
 # Advice for 4 Tesla V100 32GB                            
-python visual_chatgpt.py --load "ImageCaptioning_cuda:0,ImageEditing_cuda:0,
+python visual_chatgpt.py --load "Text2Box_cuda:0,Segmenting_cuda:0,
+    Inpainting_cuda:0,ImageCaptioning_cuda:0,
     Text2Image_cuda:1,Image2Canny_cpu,CannyText2Image_cuda:1,
     Image2Depth_cpu,DepthText2Image_cuda:1,VisualQuestionAnswering_cuda:2,
     InstructPix2Pix_cuda:2,Image2Scribble_cpu,ScribbleText2Image_cuda:2,
-    Image2Seg_cpu,SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
+    SegText2Image_cuda:2,Image2Pose_cpu,PoseText2Image_cuda:2,
     Image2Hed_cpu,HedText2Image_cuda:3,Image2Normal_cpu,
     NormalText2Image_cuda:3,Image2Line_cpu,LineText2Image_cuda:3"
-                             
+
 ```
 
 ## GPU memory usage
@@ -125,6 +138,13 @@ We appreciate the open source of the following projects:
 [BLIP](https://github.com/salesforce/BLIP) &#8194;
 
 ## Contact Information
-For help or issues using the Visual ChatGPT, please submit a GitHub issue.
+For help or issues using the TaskMatrix, please submit a GitHub issue.
 
 For other communications, please contact Chenfei WU (chewu@microsoft.com) or Nan DUAN (nanduan@microsoft.com).
+
+## Trademark Notice
+
+Trademarks This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
+
+## Disclaimer
+The recommended models in this Repo are just examples, used for scientific research exploring the concept of task automation and benchmarking with the paper published at [Visual ChatGPT: Talking, Drawing and Editing with Visual Foundation Models](https://arxiv.org/abs/2303.04671). Users can replace the models in this Repo according to their research needs. When using the recommended models in this Repo, you need to comply with the licenses of these models respectively. Microsoft shall not be held liable for any infringement of third-party rights resulting from your usage of this repo. Users agree to defend, indemnify and hold Microsoft harmless from and against all damages, costs, and attorneys' fees in connection with any claims arising from this Repo. If anyone believes that this Repo infringes on your rights, please notify the project owner [email](chewu@microsoft.com).

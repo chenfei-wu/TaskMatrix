@@ -1,0 +1,691 @@
+<!-- Copyright (c) Microsoft Corporation.
+     Licensed under the MIT License. -->
+     
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tutorial Demo</title>
+    <style>
+      h1{
+        text-align: center;
+      }
+      #container{
+        display: flex;
+        flex: 1;
+      }
+      #prompt-container{
+        width: 800px;
+      }
+      .mountNodeContainer{
+        position: relative;
+      }
+      #mountNodeLoading{
+        display: none;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: rgba(0,0,0,0.8);
+        text-align: center;
+        padding-top: 50px;
+        color: white;
+        box-sizing: border-box;
+      }
+      #mountNode{
+        margin-top: 50px;
+        position: relative;
+        width: 800px;
+        height: 750px;
+      }
+      #mountNode canvas{
+        background-color: antiquewhite;
+      }
+      #dia-container{
+        margin: 0 30px;
+        border: 1px solid black;
+        width: 600px;
+        height: 870px;
+        padding: 10px;
+      }
+      #dialogues{
+        height: 835px;
+        width: 100%;
+        overflow-y: scroll
+      }
+
+      #contextMenu {
+        position: absolute;
+        list-style-type: none;
+        padding: 10px 8px;
+        left: -150px;
+        background-color: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e2e2e2;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #545454;
+      }
+      #contextMenu li {
+        cursor: pointer;
+        list-style-type:none;
+        list-style: none;
+        margin-left: 0px;
+      }
+      #contextMenu li:hover {
+        color: #aaa;
+      }
+      .dia-me{
+        margin: 10px;
+        margin-left: 50px;
+        padding: 5px;
+        border: 1px solid blue;
+        text-align: right;
+      }
+      .dia-ai{
+        margin: 10px;
+        margin-right: 50px;
+        padding: 5px;
+        border: 1px solid red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Low Code Demo</h1>
+    <div id="container">
+      <div id="left">
+        <div id="prompt-container">
+          Task:
+          <br/>
+          <input id="prompt-text" type="text" placeholder="type your task here "size="50">
+          <button id="prompt-confirm" onclick="promptConfirm()">Confirm</button>
+        </div>
+        <div class="mountNodeContainer">
+          <div id="mountNode"></div>
+          <div id="mountNodeLoading">loading...</div>
+        </div>
+        <button id="regenerate" onclick="promptConfirm()">Regenerate</button>
+        <!-- <button id="workflow-Confirm" onclick="workflowConfirm()">Confirm</button> -->
+      </div>
+      <div id="right">
+        <div id="dia-container">
+          <div id="dialogues"></div>
+          <input id="message-text" type="text" placeholder="type your question here" size="70">
+          <button id="dia-confirm" onclick="diaConfirm()">Send</button>
+        </div>
+      </div>
+    </div>
+    
+
+    <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.7.1/dist/g6.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+
+      function dataToG6(oriData, parent, color){
+        let nodes = [];
+        let edges = [];
+        let polylineLength = graph.save().edges.filter((edge)=>{
+          return edge.type === "polyline"
+        }).length+1
+        for (let index = 0; index < oriData.length; index++) {
+          const item = oriData[index];
+          let label = "";
+          if (item.stepDescription.length > 50){
+            label = item.stepDescription.substring(0, 50) + "-\n" + item.stepDescription.substring(50)
+          } else{
+            label = item.stepDescription
+          }
+           
+          let n = {
+            id: item.stepId,
+            type: 'rect',
+            extension: []
+          };
+          n.label = n.id + item.stepName + '\n' + label;
+          nodes.push(n);
+          if (item.jumpLogic.length > 0){
+            let jumpLogic = item.jumpLogic
+            for (let j = 0; j < jumpLogic.length; j++){
+              let e = {
+                source: item.stepId, // start id
+                target: jumpLogic[j].Target, // target id
+                label: jumpLogic[j].Condition, // jump condition text
+                type:"polyline",
+                style: {
+                  opacity: 0.6,
+                  stroke: '#f00',
+                  offset: (polylineLength)*20,
+                  endArrow: {
+                    path: G6.Arrow.vee(15, 20, 0), // arrows
+                    d: 0
+                  }, 
+                },
+                sourceAnchor:3,
+                targetAnchor:3
+              }
+              edges.push(e);
+              polylineLength +=1
+            }
+          }
+          if(index > 0){
+            let e = {
+                source: oriData[index-1].stepId, // start id
+                target: item.stepId, // target id
+                label: '', // jump condition text
+                type:"line",
+              }
+              edges.push(e);
+          }
+        }
+        console.log(nodes,edges)
+        return {
+          nodes,
+          edges,
+        }
+      }
+
+      function G6ToData(){
+        let nodes = graph.getNodes();
+        let data = [];
+        let edges = graph.getEdges();
+        for (const n of nodes) {
+          let id = n.getID();
+          let label = n.getModel().label;
+          let strs = label.split('\n');
+          let name = strs[0].substring(id.length);
+          let des = "";
+          if(strs.length == 2){
+            des = strs[1]
+          } else {
+            des = strs[1].substring(0, strs[1].length - 1) + strs[2]
+          }
+          let o = {
+            stepId: id,
+            stepName: name,
+            stepDescription: des,
+            jumpLogic: [],
+            extension: []
+          }
+          data.push(o)
+        }
+        for (const e of edges) {
+          let label = e.getModel().label;
+          if(label === '')
+            continue;
+          let source = e.getModel().source;
+          let target = e.getModel().target;
+          let o = {
+            Condition: label, 
+            Target: target
+          }
+          for (const n of data){
+            if(n.stepId === source){
+              n.jumpLogic.push(o);
+              break;
+            }
+          }
+        }
+
+        for (const n of data){
+          let sub = n.stepId.split('.');
+          if(sub.length === 1){
+            continue;
+          } else {
+            let parentNode;
+            for (const p of data){
+              if(p.stepId === sub[0]){
+                parentNode = p;
+                break;
+              }
+            }
+            for(let i = 1; i < sub.length - 1; i ++){
+              parentNode = parentNode.extension[parseInt(sub[i])]
+            }
+            parentNode.extension.push(JSON.parse(JSON.stringify(n)));
+            n.flag = true;
+          }
+        }
+
+        for (let i = data.length - 1; i >= 0; i --){
+          if(data[i].flag === true)
+            data.splice(i, 1)
+        }
+
+        return JSON.stringify(data, null, 2);
+      }
+
+      function update() {
+        const nodes = graph.getNodes();
+        console.log(nodes)
+      }
+      const contextMenu = new G6.Menu({
+        getContent(evt) {
+          let header;
+          if (evt.target && evt.target.isCanvas && evt.target.isCanvas()) {
+            header = 'Canvas ContextMenu';
+          } else if (evt.item) {
+            const itemType = evt.item.getType();
+            header = `${itemType.toUpperCase()} Operation`;
+          }
+          return `
+          <h3>${header}</h3>
+          <ul>
+            <li id="add">Add</li>
+            <li id="delete">Delete</li>
+            <li id="edit">Edit</li>
+            <li id="moveup">Move Forward</li>
+            <li id="extend">Extend</li>
+            <li id="addcondition">Add Condition</li>
+          </ul>`;
+        },
+        handleMenuClick: (target, item) => {
+          const graphData = graph.save()
+          let nodes = graphData.nodes
+          let edges = graphData.edges
+          const model = item.getModel();
+          clickedModelId = model.id;
+
+          if (target.id === "add") {
+            const nodeIndex = nodes.findIndex((node)=>node.id === clickedModelId)
+            const edgeIndex = edges.findIndex((edge)=>{
+              return edge.source === clickedModelId && (!edge.type||edge.type ==="line")
+            })
+            const id = "STEP " + (nodeIndex+2) // "ADD-"+Date.now()
+            const nodeModel = {
+              id: id,
+              type: 'rect',
+            };
+            nodeModel.label = nodeModel.id + " STEP Name" + "\n" +  "STEP Description";
+            edges = edges.map((e)=>{
+              const sourceNum = Number(e.source.slice(5))||edges.length
+              const targetNum = Number(e.target.slice(5))||edges.length
+              return {
+                ...e,
+                source: sourceNum>nodeIndex+1?e.source.slice(0,5) + (sourceNum+1):e.source, 
+                target: targetNum>nodeIndex+1?e.target.slice(0,5) + (targetNum+1):e.target, 
+              }
+            })
+            const edgeModel = {
+              source: '', // start id
+              target: "", // target id
+              label: '', // jump condition text
+              type:'line'
+            };
+            if(edgeIndex>=0){
+              edgeModel.source = id
+              edgeModel.target = edges[edgeIndex].target
+              edges[edgeIndex].target = id;
+              edges.splice(edgeIndex+1,0,edgeModel);
+            }else{
+              edgeModel.source = nodes[nodes.length-1].id
+              edgeModel.target = id
+              edges.push(edgeModel)
+            }
+            if(nodeIndex>=0)nodes.splice(nodeIndex+1,0,nodeModel);
+            nodes = nodes.map((n,i)=>{
+              if(i>nodeIndex+1){
+                const id = "STEP " + (i+1)
+                return {
+                  ...n,
+                  id,
+                  label:n.label.replaceAll(n.id,id)
+                }
+              }
+              return n
+            })
+            console.log(nodes,edges)
+            graph.read({
+              nodes,edges
+            })
+          } else if(target.id === "delete"){
+            const nodeIndex = nodes.findIndex((node)=>node.id === clickedModelId)
+            let clickedModelTargetId = ""
+            edges = edges.filter((edge,i)=>{
+              if(edge.type ==="polyline" && (edge.source===clickedModelId||edge.target===clickedModelId)){
+                return false
+              }
+              if(edge.source === clickedModelId){
+                clickedModelTargetId = edge.target
+                return false
+              }
+              if(edge.target === clickedModelId&&i===edges.length-1){
+                return false
+              }
+              return true
+            }).map((e)=>{
+              const sourceNum = Number(e.source.slice(5))||edges.length
+              const targetNum = e.target === clickedModelId?(Number(clickedModelTargetId.slice(5))||edges.length):(Number(e.target.slice(5))||edges.length)
+              return {
+                ...e,
+                source: sourceNum>=nodeIndex+1?e.source.slice(0,5) + (sourceNum-1):e.source, 
+                target: targetNum>=nodeIndex+1?e.target.slice(0,5) + (targetNum-1):e.target, 
+              }
+            })
+            if(nodeIndex>=0)nodes.splice(nodeIndex,1)
+            nodes = nodes.map((n,i)=>{
+              if(i>=nodeIndex){
+                const id = "STEP " + (i+1)
+                return {
+                  ...n,
+                  id,
+                  label:n.label.replaceAll(n.id,id)
+                }
+              }
+              return n
+            })
+            console.log(nodes,edges)
+            graph.read({
+              nodes,edges
+            })
+          }else if(target.id === "edit"){
+            let p = prompt("Please Edit STEP", item.getModel().label);
+            const model = {
+              id: item.getID(),
+              label: p,
+            };
+            graph.updateItem(item, model);
+          }else if(target.id === "moveup"){
+            const nodeIndex = nodes.findIndex((node)=>node.id === clickedModelId)
+            if(nodeIndex>0){
+              const v1 = nodes[nodeIndex]
+              const v2 = nodes[nodeIndex-1]
+              nodes[nodeIndex] = {...v2,id:v1.id,label:v2.label.replaceAll(v2.id,v1.id)}
+              nodes[nodeIndex-1] = {...v1,id:v2.id,label:v1.label.replaceAll(v1.id,v2.id)}
+            }
+            console.log(nodes,edges)
+            graph.read({
+              nodes,edges
+            })
+          }else if(target.id === "extend"){
+            let data = JSON.stringify({
+              "task_prompt": document.getElementById("prompt-text").value,
+              "current_workflow": G6ToData(),
+              "step": item.getID()
+            });
+            axios.post("http://127.0.0.1:8888/api/extend_workflow", data, {
+              headers: {"Content-Type": "application/json"}
+            })
+            .then(response => {
+              extendData = response.data;
+              const currData = JSON.parse(G6ToData())
+              const nodeIndex = nodes.findIndex((node)=>node.id === clickedModelId)
+              if(currData[nodeIndex]&&extendData.length>0){
+                extendData[extendData.length-1].jumpLogic.push(...currData[nodeIndex].jumpLogic)
+              }
+              currData.splice(nodeIndex,1,...extendData)
+              addedData = currData.map((data,i)=>{
+                if(i>=nodeIndex){
+                  const stepId = "STEP " + (i+1)
+                  return {
+                    ...data,
+                    stepId,
+                    jumpLogic:data.jumpLogic.map((j)=>{
+                      const num = Number(j.Target.slice(5))||currData.length
+                      if(num>nodeIndex+1){
+                        const newNum = (num+extendData.length-1)
+                        return {
+                          ...j,
+                          Target:"STEP " + (newNum>0?newNum:"")
+                        }
+                      }
+                      return j
+                    })
+                  }
+                }
+                return data
+              })
+              const {nodes:extendNodes,edges:extendEdges} = dataToG6(addedData)
+              graph.read({
+                nodes:extendNodes,edges:extendEdges
+              })
+            })
+            .catch(error => {
+              alert("Network error, please try again.")
+              console.error(error);
+            });
+
+          }else if(target.id === "addcondition"){
+            let id = prompt("Plese Enter NodeID (e.g., STEP 1)");
+            node = graph.findById(id);
+            if(!node){
+              alert("No Such Node")
+              return;
+            }
+            let c = prompt("Please Enter Condition");
+            const polylineLength = graph.save().edges.filter((edge)=>{
+              return edge.type === "polyline"
+            }).length
+            const model = {
+              source: item.getID(), // start id
+              target: id, // target id
+              label: c, // jump condition text
+              type:"polyline",
+              style: {
+                opacity: 0.6,
+                stroke: '#f00',
+                offset: (polylineLength+1)*20,
+                endArrow: {
+                  path: G6.Arrow.vee(15, 20, 0), // arrows
+                  d: 0
+                }, 
+              },
+              sourceAnchor:3,
+              targetAnchor:3
+            }
+            graph.addItem("edge", model);
+          }else if(target.id === "delcondition"){
+            
+          }
+        },
+        // offsetX and offsetY include the padding of the parent container
+        offsetX: 16 + 10,
+        offsetY: 0,
+        // the types of items that allow the menu show up
+        itemTypes: ['node'],
+      });
+
+      const edgeMenu = new G6.Menu({
+        getContent(evt) {
+          let header;
+          if (evt.target && evt.target.isCanvas && evt.target.isCanvas()) {
+            header = 'Canvas ContextMenu';
+          } else if (evt.item) {
+            const itemType = evt.item.getType();
+            header = `${itemType.toUpperCase()} Operation`;
+          }
+          return `
+          <h3>${header}</h3>
+          <ul>
+            <li id="delete">Delete</li>
+            <li id="edit">Edit</li>
+          </ul>`;
+        },
+        handleMenuClick: (target, item) => {
+          if(target.id === "delete"){
+            graph.removeItem(item);
+          }else if(target.id === "edit"){
+            let p = prompt("Please Edit STEP", item.getModel().label);
+            const model = {
+              id: item.getID(),
+              label: p,
+            };
+            graph.updateItem(item, model);
+          }
+        },
+        // offsetX and offsetY include the padding of the parent container
+        offsetX: 16 + 10,
+        offsetY: 0,
+        // the types of items that allow the menu show up
+        itemTypes: ['edge'],
+      });
+
+
+      const graph = new G6.Graph({
+        container: 'mountNode',
+        width: 800, // graph width
+        height: 750, // graph height
+        modes: {
+          default: ['drag-canvas', 'zoom-canvas', 'drag-node'], // allow to drag
+        },
+        // fitView: true,
+        // fitViewPadding: [20, 40, 50, 20],
+        layout: {
+          
+          type: 'dagre',    
+          ranksep: 30,
+        },
+        // layout: {
+          
+        //   type: 'force',    
+        // },
+        plugins: [contextMenu, edgeMenu],
+        defaultNode: {
+          size: [450, 80], 
+          style: {
+            fill: 'steelblue',
+            stroke: '#666',
+            lineWidth: 1, 
+          },
+          anchorPoints:[[0.5,0],[0.5,1],[0,0.5],[1,0.5]],
+          
+          labelCfg: {
+            
+            style: {
+              fill: '#fff', // node text color
+              fontSize: 15, // node text size
+            },
+          },
+        },
+        defaultEdge: {
+          style: {
+            opacity: 0.6,
+            stroke: 'grey',
+            endArrow: {
+              path: G6.Arrow.vee(15, 20, 15), // arrows
+              d: 15
+            },        
+          },
+          // edg text
+          labelCfg: {
+            // autoRotate: true, 
+            style:{
+              fontSize: 15,
+            }
+          },
+        },
+        nodeStateStyles: {
+          // hover
+          hover: {
+            fill: 'lightsteelblue',
+          },
+          // click
+          click: {
+            stroke: '#000',
+            lineWidth: 3,
+          },
+        },
+      });
+
+      function promptConfirm(){
+        let prompt = document.getElementById("prompt-text").value;
+        if (prompt == "") {
+          alert("Please Enter Task.")
+          return
+        }
+        let data = JSON.stringify({"task_prompt": prompt});
+        axios.post("http://127.0.0.1:8888/api/get_workflow", data, {
+          headers: {"Content-Type": "application/json"}
+        })
+        .then(response => {
+          main(response.data);
+        })
+        .catch(error => {
+          alert("Network error, please try again.")
+          console.error(error);
+        });
+      }
+
+      function switchLoading(bool){
+        let loadingEle = document.getElementById("mountNodeLoading");
+        if(bool){
+          loadingEle.style.display = "block"
+        }else{
+          loadingEle.style.display = "none"
+        }
+      }
+      
+      function diaConfirm(){
+        let task_prompt = document.getElementById("prompt-text").value;
+        let curr_workflow = G6ToData();
+        
+        let dialogues = document.getElementById("dialogues");
+        let history = [];
+        for (let i = 0; i < dialogues.children.length; i++) {
+          let currentClass = dialogues.children[i].classList[0];
+          let currentText = dialogues.children[i].textContent;
+          let currentUser = ""
+          if (currentClass === "dia-me") {
+            currentUser = "user";
+          } else if (currentClass === "dia-ai") {
+            currentUser = "assistant";
+          }
+          history.push({"role": currentUser, "content":currentText});
+        }
+        let message = document.getElementById("message-text").value;
+        document.getElementById("message-text").value = "";
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "dia-me"
+        messageDiv.innerHTML = message;
+        dialogues.appendChild(messageDiv);
+
+        // post
+        let llm_res = ""
+        let data = JSON.stringify({
+          "task_prompt": task_prompt,
+          "confirmed_workflow": curr_workflow,
+          "curr_input": message,
+          "history": history
+        });
+        axios.post("http://127.0.0.1:8888/api/execute", data, {
+          headers: {"Content-Type": "application/json"}
+        })
+        .then(response => {
+          llm_res = response.data;
+          const aiDiv = document.createElement("div");
+          aiDiv.className = "dia-ai"
+          aiDiv.innerHTML = llm_res
+          dialogues.appendChild(aiDiv);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+      }
+      const main = async (data) => {
+        update()
+        graph.data(dataToG6(data, -1));
+        graph.render();
+        graph.on('node:click', (e) => {
+          // set all clicked node to not clicked
+          const clickNodes = graph.findAllByState('node', 'click');
+          clickNodes.forEach((cn) => {
+            graph.setItemState(cn, 'click', false);
+          });
+          const nodeItem = e.item; // get the clicked node
+          graph.setItemState(nodeItem, 'click', true); // set the click status of current as true
+        });
+        graph.on('edge:click', (e) => {
+          console.log(e)
+          // set all clicked node to not clicked
+          const clickEdges = graph.findAllByState('edge', 'click');
+          clickEdges.forEach((cn) => {
+            graph.setItemState(cn, 'click', false);
+          });
+          const nodeItem = e.item; // get the clicked node
+          graph.setItemState(nodeItem, 'click', true); // set the click status of current as true
+        });
+      };
+      
+
+    </script>
+  </body>
+</html>
