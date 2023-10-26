@@ -30,6 +30,9 @@ from langchain.agents.initialize import initialize_agent
 from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
+from doctran import Doctran
+
+import asyncio
 
 # Grounding DINO
 import groundingdino.datasets.transforms as T
@@ -132,6 +135,54 @@ VISUAL_CHATGPT_SUFFIX_CN = """你对文件名的正确性非常严格，而且�
 {chat_history}
 
 新输入: {input}
+Thought: Do I need to use a tool? {agent_scratchpad}
+"""
+
+VISUAL_CHATGPT_PREFIX_KO = """Visual ChatGPT는 다양한 텍스트 및 시각적 관련 작업에 대한 지원을 할 수 있도록 설계되었습니다. 간단한 질문에 답변하거나 다양한 주제에 대한 깊은 설명 및 토론을 제공하는 등 다양한 작업에 도움을 줄 수 있습니다. Visual ChatGPT는 입력에 따라 인간과 유사한 텍스트를 생성할 수 있으며, 자연스러운 대화를 이끌고 주제와 관련된 일관된 대답을 제공할 수 있습니다.
+
+Visual ChatGPT는 많은 양의 텍스트와 image를 처리하고 이해할 수 있습니다. 언어 모델로서 Visual ChatGPT는 직접 image를 읽을 수는 없지만 다양한 시각적 작업을 완료하기 위한 도구 목록을 갖고 있습니다. 각 image는 "image/xxx.png"와 같은 파일 이름으로 형성되며, Visual ChatGPT는 간접적으로 그림을 이해하기 위한 다양한 도구를 활용할 수 있습니다. image에 대한 이야기를 할 때, Visual ChatGPT는 파일 이름에 대해 매우 엄격하며 존재하지 않는 파일을 만들어내지 않습니다. 새 image 파일을 생성할 때 Visual ChatGPT는 image가 사용자의 요구와 일치하지 않을 수 있으며, 실제 image를 관찰하기 위해 다른 시각적 질문 응답 도구나 설명 도구를 사용할 것입니다. Visual ChatGPT는 도구를 순서대로 사용하며 image 내용과 image 파일 이름을 가장 마지막 도구 관찰에서 제공하도록 기억합니다. 새 image가 생성되면 해당 파일 이름을 제공할 것입니다.
+
+사람은 설명과 함께 Visual ChatGPT에 새로운 그림을 제공할 수 있습니다. 이 설명은 Visual ChatGPT가 해당 image를 이해하는 데 도움을 줍니다. 그러나 Visual ChatGPT는 설명에서 직접 상상하는 대신 다음 작업을 완료하기 위해 도구를 사용해야 합니다.
+
+총론적으로, Visual ChatGPT는 다양한 작업에 도움을 주고 다양한 주제에 대한 가치 있는 통찰력과 정보를 제공할 수 있는 강력한 시각적 대화 도구입니다.
+
+파일 위치와 단어의 혼동을 피하기 위해 모든 이미지는 image로 표기됩니다.
+
+인간이 입력한 말은 전부 영어로 번역하여 수행해야 합니다.
+
+도구:
+------
+
+Visual ChatGPT는 다음과 같은 도구들에 액세스할 수 있습니다:"""
+
+VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_KO = """도구를 사용했다면 반드시 다음 형식을 반드시 사용해야 합니다:
+
+```
+Thought: Do I need to use a tool? Yes
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+```
+
+반대로 도구를 사용하지 않았다면 다음 형식을 반드시 사용해야 합니다:
+
+```
+Thought: Do I need to use a tool? No
+{ai_prefix}: [your response here]
+```
+"""
+
+VISUAL_CHATGPT_SUFFIX_KO = """파일 이름의 정확성에 매우 엄격하며 존재하지 않는 파일 이름을 가짜로 만들지 않을 것입니다.
+마지막 도구 관찰에서 image 파일 이름을 충실히 제공하도록 기억할 것입니다.
+
+시작!
+
+이전 대화 내용:
+{chat_history}
+
+새 입력: {input}
+Visual ChatGPT는 텍스트 언어 모델이므로 Visual ChatGPT는 상상 대신 image를 관찰하기 위해 도구를 사용해야 합니다.
+생각과 관찰은 오직 Visual ChatGPT만이 볼 수 있으며, Visual ChatGPT는 중요한 정보를 인간에게 최종 응답에서 반복하도록 기억해야 합니다.
 Thought: Do I need to use a tool? {agent_scratchpad}
 """
 
@@ -1500,10 +1551,15 @@ class ConversationBot:
             PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS, VISUAL_CHATGPT_SUFFIX
             place = "Enter text and press enter, or upload an image"
             label_clear = "Clear"
-        else:
+        elif lang=='Chinese':
             PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_CN, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_CN, VISUAL_CHATGPT_SUFFIX_CN
             place = "输入文字并回车，或者上传图片"
             label_clear = "清除"
+        else:
+            PREFIX, FORMAT_INSTRUCTIONS, SUFFIX = VISUAL_CHATGPT_PREFIX_KO, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS_KO, VISUAL_CHATGPT_SUFFIX_KO  # VISUAL_CHATGPT_PREFIX, VISUAL_CHATGPT_FORMAT_INSTRUCTIONS, VISUAL_CHATGPT_SUFFIX
+            place = "텍스트를 입력하고 엔터 키를 누르거나 image를 업로드"
+            label_clear = "지우기"
+        self.doctran = Doctran(openai_api_key=os.getenv('OPENAI_API_KEY'), openai_model='gpt-3.5-turbo')
         self.agent = initialize_agent(
             self.tools,
             self.llm,
@@ -1515,9 +1571,13 @@ class ConversationBot:
                           'suffix': SUFFIX}, )
         return gr.update(visible = True), gr.update(visible = False), gr.update(placeholder=place), gr.update(value=label_clear)
 
-    def run_text(self, text, state):
+    async def run_text(self, text, state):
         self.agent.memory.buffer = cut_dialogue_history(self.agent.memory.buffer, keep_last_n_words=500)
-        res = self.agent({"input": text.strip()})
+        document = self.doctran.parse(content=text.strip())
+        print(document)
+        document = document.translate(language="english").execute()
+        print(document)
+        res = self.agent({"input": document.transformed_content})
         res['output'] = res['output'].replace("\\", "/")
         response = re.sub('(image/[-\w]*.png)', lambda m: f'![](file={m.group(0)})*{m.group(0)}*', res['output'])
         state = state + [(text, response)]
@@ -1542,9 +1602,12 @@ class ConversationBot:
         if lang == 'Chinese':
             Human_prompt = f'\nHuman: 提供一张名为 {image_filename}的图片。它的描述是: {description}。 这些信息帮助你理解这个图像，但是你应该使用工具来完成下面的任务，而不是直接从我的描述中想象。 如果你明白了, 说 \"收到\". \n'
             AI_prompt = "收到。  "
-        else:
+        elif lang == 'English':
             Human_prompt = f'\nHuman: provide a figure named {image_filename}. The description is: {description}. This information helps you to understand this image, but you should use tools to finish following tasks, rather than directly imagine from my description. If you understand, say \"Received\". \n'
             AI_prompt = "Received.  "
+        else:
+            Human_prompt = f'\n인간: {image_filename}라는 이름의 그림을 제공해주세요. 이 그림에 대한 설명은 다음과 같습니다: {description}. 이 정보는 당신이 이 image를 이해하는 데 도움이 될 것입니다. 그러나 당신은 이러한 작업을 직접 내용을 상상하는 대신 도구를 사용하여 완료해야 합니다. 이해하셨다면 \"전달받았습니다.\"라고 말해주세요. \n'
+            AI_prompt = "전달받았습니다.  "            
         self.agent.memory.buffer = self.agent.memory.buffer + Human_prompt + 'AI: ' + AI_prompt
         state = state + [(f"![](file={image_filename})*{image_filename}*", AI_prompt)]
         print(f"\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n"
@@ -1561,7 +1624,7 @@ if __name__ == '__main__':
     load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
     bot = ConversationBot(load_dict=load_dict)
     with gr.Blocks(css="#chatbot .overflow-y-auto{height:500px}") as demo:
-        lang = gr.Radio(choices = ['Chinese','English'], value=None, label='Language')
+        lang = gr.Radio(choices = ['Chinese','English', 'Korean'], value=None, label='Language')
         chatbot = gr.Chatbot(elem_id="chatbot", label="Visual ChatGPT")
         state = gr.State([])
         with gr.Row(visible=False) as input_raws:
@@ -1581,3 +1644,4 @@ if __name__ == '__main__':
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)
     demo.launch(server_name="0.0.0.0", server_port=7861)
+

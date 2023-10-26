@@ -28,3 +28,4 @@ torchmetrics
 transformers
 webdataset
 yapf
+doctran
